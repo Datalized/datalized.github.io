@@ -168,7 +168,7 @@ with tab1:
                      hover_data=['prom_lectora'],
                      labels={'cantidad': 'Postulantes', 'prom_lectora': 'Prom. Lectora'})
         fig.update_layout(xaxis_tickangle=-45, showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col2:
         st.subheader("Distribución por Rama")
@@ -184,7 +184,7 @@ with tab1:
         """).df()
 
         fig = px.pie(rama_data, values='cantidad', names='rama', hole=0.4)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # Histograma de puntajes
     st.subheader("Distribución de Puntajes PAES Regular")
@@ -209,7 +209,7 @@ with tab1:
         fig.add_vline(x=hist_lectora['puntaje'].mean(), line_dash="dash",
                       annotation_text=f"Prom: {hist_lectora['puntaje'].mean():.1f}")
         fig.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="bottom", y=1.02))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col_mate:
         st.markdown("**Matemática 1**")
@@ -229,7 +229,7 @@ with tab1:
         fig.add_vline(x=hist_mate['puntaje'].mean(), line_dash="dash",
                       annotation_text=f"Prom: {hist_mate['puntaje'].mean():.1f}")
         fig.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="bottom", y=1.02))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 with tab2:
     st.header("Análisis por Establecimiento")
@@ -286,7 +286,7 @@ with tab2:
         # Agregar columna de ranking
         est_data.insert(0, 'ranking', range(1, len(est_data) + 1))
 
-        st.dataframe(est_data, use_container_width=True, hide_index=True)
+        st.dataframe(est_data, width="stretch", hide_index=True)
 
         # Gráfico de barras horizontal
         if not est_data.empty:
@@ -299,7 +299,7 @@ with tab2:
                          labels={'prom_lect_mate': 'Promedio Lectora+Mate1', 'establecimiento': ''},
                          orientation='h')
             fig.update_layout(height=600, yaxis={'categoryorder': 'total ascending'})
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
     with sub_tab2:
         st.subheader("Comparación entre establecimientos similares")
@@ -342,7 +342,7 @@ with tab2:
         # Agregar columna de ranking
         est_ctx.insert(0, 'ranking', range(1, len(est_ctx) + 1))
 
-        st.dataframe(est_ctx, use_container_width=True, hide_index=True)
+        st.dataframe(est_ctx, width="stretch", hide_index=True)
 
         # Gráfico de barras horizontal con color por dependencia
         if not est_ctx.empty:
@@ -355,7 +355,7 @@ with tab2:
                          labels={'promedio': 'Promedio Lectora+Mate1', 'establecimiento': ''},
                          orientation='h')
             fig.update_layout(height=600, yaxis={'categoryorder': 'total ascending'})
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
 with tab3:
     st.header("Buscar Establecimiento")
@@ -482,7 +482,7 @@ with tab3:
                 fig.add_vline(x=500, line_dash="dot", line_color="gray", annotation_text="Prom. Nacional Lect")
 
                 fig.update_layout(height=500)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
 
                 # Box plots de puntajes
                 st.subheader("📦 Distribución de Puntajes")
@@ -494,7 +494,7 @@ with tab3:
 
                 fig = px.box(pruebas_data, x='Prueba', y='Puntaje', color='Prueba')
                 fig.update_layout(showlegend=False, height=400)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
 
                 st.divider()
 
@@ -569,13 +569,13 @@ with tab3:
                             fig.add_annotation(x=estab_info['nombre'], y=prom_lm.mean() + 20,
                                                text="⭐ Seleccionado", showarrow=False)
 
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, width="stretch")
 
                             # Tabla de comparación
                             tabla_comp = comparacion[['nombre', 'dependencia', 'n_estudiantes', 'prom_lectora', 'prom_mate1', 'prom_lect_mate', 'distancia_km']].copy()
                             tabla_comp.columns = ['Establecimiento', 'Dependencia', 'Estudiantes', 'Prom. Lectora', 'Prom. Mate1', 'Prom. L+M', 'Distancia (km)']
                             tabla_comp['Distancia (km)'] = tabla_comp['Distancia (km)'].round(1)
-                            st.dataframe(tabla_comp, use_container_width=True, hide_index=True)
+                            st.dataframe(tabla_comp, width="stretch", hide_index=True)
                         else:
                             st.info("No se encontraron establecimientos con resultados PAES a menos de 10 km")
                 else:
@@ -604,7 +604,7 @@ with tab3:
                     """).df()
 
                     if not comp_comuna.empty:
-                        st.dataframe(comp_comuna, use_container_width=True, hide_index=True)
+                        st.dataframe(comp_comuna, width="stretch", hide_index=True)
             else:
                 st.warning("No se encontraron datos de estudiantes para este establecimiento")
 
@@ -639,7 +639,7 @@ with tab4:
 
     # Mostrar tabla sin cod_region y orden
     region_display = region_data.drop(columns=['orden', 'cod_region'])
-    st.dataframe(region_display, use_container_width=True, hide_index=True)
+    st.dataframe(region_display, width="stretch", hide_index=True)
 
     st.divider()
 
@@ -675,7 +675,7 @@ with tab4:
                  hover_data=['region', 'alumnos', 'prom_lectora', 'prom_mate1'],
                  labels={'prom_lect_mate': 'Promedio Lectora + Mate1', 'comuna': 'Comuna'})
     fig.update_layout(xaxis_tickangle=-45)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.divider()
 
@@ -706,7 +706,7 @@ with tab4:
                      labels={'prom_lectora': 'Promedio Lectora', 'prom_mate1': 'Promedio Matemática 1'},
                      color='dependencia', color_discrete_map=COLORES_DEPENDENCIA)
     fig.update_layout(height=600)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 with tab5:
     st.header("Análisis de Brechas Educativas")
@@ -766,7 +766,7 @@ with tab5:
     """).df()
 
     # Tabla resumen
-    st.dataframe(origen_top10, use_container_width=True, hide_index=True)
+    st.dataframe(origen_top10, width="stretch", hide_index=True)
 
     # Calcular % no particular pagado
     pct_no_pagado = origen_top10[origen_top10['dependencia'] != 'Particular Pagado']['porcentaje'].sum()
@@ -797,7 +797,7 @@ with tab5:
                      title="Establecimientos con estudiantes en el Top 10% (tamaño = cantidad de estudiantes)")
     fig.update_traces(textinfo="label+value")
     fig.update_layout(height=600)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.divider()
 
@@ -826,7 +826,7 @@ with tab5:
     fig.add_hline(y=p80, line_dash="dot", line_color="orange",
                   annotation_text=f"Top 20% ({p80:.0f})")
     fig.update_layout(showlegend=False)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.divider()
 
@@ -859,7 +859,7 @@ with tab5:
                      title="% de estudiantes en el Top 10% nacional")
         fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
         fig.update_layout(xaxis_tickangle=-45, showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col2:
         fig = px.bar(prob_data, x='dependencia', y='pct_top20',
@@ -870,9 +870,9 @@ with tab5:
                      title="% de estudiantes en el Top 20% nacional")
         fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
         fig.update_layout(xaxis_tickangle=-45, showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
-    st.dataframe(prob_data, use_container_width=True, hide_index=True)
+    st.dataframe(prob_data, width="stretch", hide_index=True)
 
 # Footer
 st.divider()
