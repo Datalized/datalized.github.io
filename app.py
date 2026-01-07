@@ -81,8 +81,43 @@ st.markdown("Análisis de resultados de la Prueba de Acceso a la Educación Supe
 # Sidebar con filtros
 st.sidebar.header("Filtros")
 
+# Cargar datos de referencia para filtros
+regiones = con.execute("""
+    SELECT DISTINCT cod_region, region
+    FROM comunas
+    ORDER BY cod_region
+""").df()
+
+# Ordenar regiones geográficamente
+regiones['orden'] = regiones['cod_region'].map(ORDEN_REGIONES)
+regiones = regiones.sort_values('orden')
+
+dependencias = con.execute("SELECT * FROM ref_dependencia ORDER BY codigo").df()
+ramas = con.execute("SELECT * FROM ref_rama ORDER BY codigo").df()
+
+# Filtros principales
+region_sel = st.sidebar.multiselect(
+    "Región",
+    options=regiones['cod_region'].tolist(),
+    format_func=lambda x: regiones[regiones['cod_region']==x]['region'].values[0] if len(regiones[regiones['cod_region']==x]) > 0 else str(x)
+)
+
+dep_sel = st.sidebar.multiselect(
+    "Dependencia",
+    options=dependencias['codigo'].tolist(),
+    format_func=lambda x: dependencias[dependencias['codigo']==x]['descripcion'].values[0]
+)
+
+rama_sel = st.sidebar.multiselect(
+    "Rama Educacional",
+    options=ramas['codigo'].tolist(),
+    format_func=lambda x: ramas[ramas['codigo']==x]['descripcion'].values[0]
+)
+
+st.sidebar.divider()
+
 # Filtros de limpieza de datos (para coincidir con cifras oficiales)
-st.sidebar.subheader("🎓 Filtros Oficiales")
+st.sidebar.subheader("Otros filtros")
 
 filtro_puntajes = st.sidebar.checkbox(
     "Solo con puntajes válidos",
@@ -100,41 +135,6 @@ filtro_promocion_actual = st.sidebar.checkbox(
     "Solo promoción actual",
     value=True,
     help="Solo incluye estudiantes de la promoción del año 2026"
-)
-
-st.sidebar.divider()
-
-# Cargar datos de referencia para filtros
-regiones = con.execute("""
-    SELECT DISTINCT cod_region, region
-    FROM comunas
-    ORDER BY cod_region
-""").df()
-
-# Ordenar regiones geográficamente
-regiones['orden'] = regiones['cod_region'].map(ORDEN_REGIONES)
-regiones = regiones.sort_values('orden')
-
-dependencias = con.execute("SELECT * FROM ref_dependencia ORDER BY codigo").df()
-ramas = con.execute("SELECT * FROM ref_rama ORDER BY codigo").df()
-
-# Filtros
-region_sel = st.sidebar.multiselect(
-    "Región",
-    options=regiones['cod_region'].tolist(),
-    format_func=lambda x: regiones[regiones['cod_region']==x]['region'].values[0] if len(regiones[regiones['cod_region']==x]) > 0 else str(x)
-)
-
-dep_sel = st.sidebar.multiselect(
-    "Dependencia",
-    options=dependencias['codigo'].tolist(),
-    format_func=lambda x: dependencias[dependencias['codigo']==x]['descripcion'].values[0]
-)
-
-rama_sel = st.sidebar.multiselect(
-    "Rama Educacional",
-    options=ramas['codigo'].tolist(),
-    format_func=lambda x: ramas[ramas['codigo']==x]['descripcion'].values[0]
 )
 
 # Construir cláusula WHERE
@@ -177,6 +177,10 @@ with tab1:
         FROM resultados_paes r
         WHERE {where_sql}
     """).df()
+
+    if stats.empty or stats['total'].values[0] == 0:
+        st.warning("No hay datos que coincidan con los filtros seleccionados. Intenta ajustar los filtros.")
+        st.stop()
 
     col1, col2, col3, col4, col5, col6 = st.columns(6)
     col1.metric("Total Postulantes", f"{stats['total'].values[0]:,}")
