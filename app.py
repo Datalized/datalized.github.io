@@ -96,7 +96,7 @@ if rama_sel:
 where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
 
 # Tabs principales
-tab1, tab2, tab3 = st.tabs(["📈 Resumen", "🏫 Por Establecimiento", "🗺️ Por Región"])
+tab1, tab2, tab3, tab4 = st.tabs(["📈 Resumen", "🏫 Por Establecimiento", "🗺️ Por Región", "📊 Análisis de Brechas"])
 
 with tab1:
     st.header("Resumen General")
@@ -189,46 +189,116 @@ with tab1:
 with tab2:
     st.header("Análisis por Establecimiento")
 
-    # Top establecimientos
-    top_n = st.slider("Cantidad de establecimientos", 10, 50, 20)
+    st.info("💡 **Nota metodológica**: El DEMRE advierte que la PAES no fue diseñada para medir calidad educativa de establecimientos. Los rankings reflejan principalmente el nivel socioeconómico de los estudiantes. Use la opción 'Comparación Contextualizada' para comparaciones más justas.")
 
-    orden = st.radio("Ordenar por", ["Mejor promedio", "Peor promedio", "Más postulantes"], horizontal=True)
+    # Sub-tabs para diferentes vistas
+    sub_tab1, sub_tab2 = st.tabs(["📋 Ranking General", "⚖️ Comparación Contextualizada"])
 
-    order_sql = {
-        "Mejor promedio": "prom_lectora DESC NULLS LAST",
-        "Peor promedio": "prom_lectora ASC NULLS LAST",
-        "Más postulantes": "cantidad DESC"
-    }[orden]
+    with sub_tab1:
+        # Top establecimientos (ranking original)
+        top_n = st.slider("Cantidad de establecimientos", 10, 50, 20, key="ranking_slider")
 
-    est_data = con.execute(f"""
-        SELECT
-            e.nombre as establecimiento,
-            d.descripcion as dependencia,
-            c.region,
-            COUNT(*) as cantidad,
-            ROUND(AVG(r.lectora_reg), 1) as prom_lectora,
-            ROUND(AVG(r.mate1_reg), 1) as prom_mate1,
-            ROUND(AVG(r.puntaje_nem), 1) as prom_nem
-        FROM resultados_paes r
-        JOIN establecimientos e ON r.rbd = e.rbd
-        JOIN ref_dependencia d ON r.dependencia = d.codigo
-        LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
-        WHERE {where_sql} AND r.lectora_reg IS NOT NULL
-        GROUP BY e.nombre, d.descripcion, c.region
-        HAVING COUNT(*) >= 5
-        ORDER BY {order_sql}
-        LIMIT {top_n}
-    """).df()
+        orden = st.radio("Ordenar por", ["Mejor promedio", "Peor promedio", "Más postulantes"], horizontal=True)
 
-    st.dataframe(est_data, use_container_width=True, hide_index=True)
+        order_sql = {
+            "Mejor promedio": "prom_lect_mate DESC NULLS LAST",
+            "Peor promedio": "prom_lect_mate ASC NULLS LAST",
+            "Más postulantes": "cantidad DESC"
+        }[orden]
 
-    # Gráfico de barras
-    if not est_data.empty:
-        fig = px.bar(est_data.head(20), x='establecimiento', y='prom_lectora',
-                     color='dependencia',
-                     hover_data=['prom_mate1', 'prom_nem', 'cantidad'])
-        fig.update_layout(xaxis_tickangle=-45)
-        st.plotly_chart(fig, use_container_width=True)
+        est_data = con.execute(f"""
+            SELECT
+                e.nombre as establecimiento,
+                d.descripcion as dependencia,
+                c.region,
+                COUNT(*) as cantidad,
+                ROUND(AVG(r.lectora_reg), 1) as prom_lectora,
+                ROUND(AVG(r.mate1_reg), 1) as prom_mate1,
+                ROUND((AVG(r.lectora_reg) + AVG(r.mate1_reg)) / 2, 1) as prom_lect_mate,
+                ROUND(PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as p25,
+                ROUND(PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as p75,
+                ROUND(AVG(r.puntaje_nem), 1) as prom_nem
+            FROM resultados_paes r
+            JOIN establecimientos e ON r.rbd = e.rbd
+            JOIN ref_dependencia d ON r.dependencia = d.codigo
+            LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
+            WHERE {where_sql} AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+            GROUP BY e.nombre, d.descripcion, c.region
+            HAVING COUNT(*) >= 5
+            ORDER BY {order_sql}
+            LIMIT {top_n}
+        """).df()
+
+        st.dataframe(est_data, use_container_width=True, hide_index=True)
+
+        # Gráfico de barras
+        if not est_data.empty:
+            fig = px.bar(est_data.head(20), x='establecimiento', y='prom_lect_mate',
+                         color='dependencia',
+                         hover_data=['prom_lectora', 'prom_mate1', 'p25', 'p75', 'cantidad'],
+                         labels={'prom_lect_mate': 'Promedio Lectora+Mate1'})
+            fig.update_layout(xaxis_tickangle=-45)
+            st.plotly_chart(fig, use_container_width=True)
+
+    with sub_tab2:
+        st.subheader("Comparación entre establecimientos similares")
+        st.caption("Compare establecimientos del mismo tipo de dependencia para una evaluación más justa")
+
+        # Selector de dependencia para comparación
+        dep_comparar = st.selectbox(
+            "Seleccionar tipo de dependencia",
+            options=dependencias['codigo'].tolist(),
+            format_func=lambda x: dependencias[dependencias['codigo']==x]['descripcion'].values[0],
+            key="dep_comparar"
+        )
+
+        top_n_ctx = st.slider("Cantidad de establecimientos", 10, 50, 20, key="ctx_slider")
+
+        # Calcular promedio de la dependencia seleccionada
+        prom_dep = con.execute(f"""
+            SELECT ROUND(AVG((lectora_reg + mate1_reg)/2), 1) as promedio
+            FROM resultados_paes
+            WHERE dependencia = {dep_comparar}
+            AND lectora_reg IS NOT NULL AND mate1_reg IS NOT NULL
+        """).df()['promedio'].values[0]
+
+        st.metric(f"Promedio nacional de esta dependencia", f"{prom_dep} pts")
+
+        # Ranking contextualizado
+        est_ctx = con.execute(f"""
+            SELECT
+                e.nombre as establecimiento,
+                c.region,
+                COUNT(*) as estudiantes,
+                ROUND(AVG((r.lectora_reg + r.mate1_reg)/2), 1) as promedio,
+                ROUND(AVG((r.lectora_reg + r.mate1_reg)/2) - {prom_dep}, 1) as diferencia_vs_pares,
+                ROUND(PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as p10,
+                ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as mediana,
+                ROUND(PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as p90,
+                SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= 802 THEN 1 ELSE 0 END) as en_top10_nacional
+            FROM resultados_paes r
+            JOIN establecimientos e ON r.rbd = e.rbd
+            LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
+            WHERE r.dependencia = {dep_comparar}
+            AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+            GROUP BY e.nombre, c.region
+            HAVING COUNT(*) >= 5
+            ORDER BY promedio DESC
+            LIMIT {top_n_ctx}
+        """).df()
+
+        st.dataframe(est_ctx, use_container_width=True, hide_index=True)
+
+        # Gráfico con diferencia vs pares
+        if not est_ctx.empty:
+            fig = px.bar(est_ctx, x='establecimiento', y='diferencia_vs_pares',
+                         color='diferencia_vs_pares',
+                         color_continuous_scale='RdYlGn',
+                         color_continuous_midpoint=0,
+                         hover_data=['promedio', 'mediana', 'p10', 'p90', 'estudiantes'],
+                         labels={'diferencia_vs_pares': 'Diferencia vs promedio de pares'})
+            fig.update_layout(xaxis_tickangle=-45, title="Diferencia respecto al promedio de su dependencia")
+            st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
     st.header("Análisis por Región")
@@ -312,6 +382,179 @@ with tab3:
                      labels={'prom_lectora': 'Promedio Lectora', 'prom_mate1': 'Promedio Matemática 1'},
                      color='prom_mate1', color_continuous_scale='RdYlGn')
     fig.update_layout(height=600)
+    st.plotly_chart(fig, use_container_width=True)
+
+with tab4:
+    st.header("Análisis de Brechas Educativas")
+
+    st.markdown("""
+    Este análisis responde a la pregunta: **¿De dónde viene realmente el talento académico?**
+
+    Los rankings tradicionales de "mejores colegios" pueden ser engañosos porque:
+    - Miden principalmente el nivel socioeconómico, no la calidad educativa
+    - Invisibilizan a miles de estudiantes destacados de colegios públicos
+    - No consideran el contexto ni el valor agregado de cada establecimiento
+
+    *Inspirado en el análisis de [@elaval](https://elaval.github.io/PAES-2026/)*
+    """)
+
+    st.divider()
+
+    # Calcular umbrales del top 10% y 20%
+    thresholds = con.execute("""
+        SELECT
+            PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY (lectora_reg + mate1_reg)/2) as p90,
+            PERCENTILE_CONT(0.8) WITHIN GROUP (ORDER BY (lectora_reg + mate1_reg)/2) as p80
+        FROM resultados_paes
+        WHERE lectora_reg IS NOT NULL AND mate1_reg IS NOT NULL
+    """).df()
+    p90 = thresholds['p90'].values[0]
+    p80 = thresholds['p80'].values[0]
+
+    # Métricas principales
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Umbral Top 10%", f"{p90:.0f} pts", help="Promedio Lectora + Matemática 1")
+    col2.metric("Umbral Top 20%", f"{p80:.0f} pts", help="Promedio Lectora + Matemática 1")
+
+    total_top10 = con.execute(f"""
+        SELECT COUNT(*) FROM resultados_paes
+        WHERE (lectora_reg + mate1_reg)/2 >= {p90}
+        AND lectora_reg IS NOT NULL AND mate1_reg IS NOT NULL
+    """).df().iloc[0, 0]
+    col3.metric("Estudiantes en Top 10%", f"{total_top10:,}")
+
+    st.divider()
+
+    # Sección 1: Origen del Top 10%
+    st.subheader("🎯 ¿De dónde vienen los estudiantes del Top 10%?")
+
+    origen_top10 = con.execute(f"""
+        SELECT
+            d.descripcion as dependencia,
+            COUNT(*) as estudiantes,
+            ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) as porcentaje
+        FROM resultados_paes r
+        JOIN ref_dependencia d ON r.dependencia = d.codigo
+        WHERE (r.lectora_reg + r.mate1_reg)/2 >= {p90}
+        AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+        GROUP BY d.descripcion
+        ORDER BY estudiantes DESC
+    """).df()
+
+    col1, col2 = st.columns([1, 2])
+
+    with col1:
+        st.dataframe(origen_top10, use_container_width=True, hide_index=True)
+
+        # Calcular % no particular pagado
+        pct_no_pagado = origen_top10[origen_top10['dependencia'] != 'Particular Pagado']['porcentaje'].sum()
+        st.success(f"**{pct_no_pagado:.1f}%** del Top 10% NO viene de colegios particulares pagados")
+
+    with col2:
+        # Treemap del origen
+        fig = px.treemap(origen_top10,
+                         path=['dependencia'],
+                         values='estudiantes',
+                         color='porcentaje',
+                         color_continuous_scale='Blues',
+                         title="Distribución del Top 10% por tipo de establecimiento")
+        fig.update_traces(textinfo="label+value+percent root")
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+    # Sección 2: Box plots por dependencia
+    st.subheader("📊 Distribución de puntajes por tipo de establecimiento")
+    st.caption("Los box plots muestran la distribución completa, no solo promedios")
+
+    # Obtener datos para box plot (muestra para rendimiento)
+    box_data = con.execute(f"""
+        SELECT
+            d.descripcion as dependencia,
+            (r.lectora_reg + r.mate1_reg)/2 as promedio
+        FROM resultados_paes r
+        JOIN ref_dependencia d ON r.dependencia = d.codigo
+        WHERE {where_sql} AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+        USING SAMPLE 10 PERCENT (bernoulli)
+    """).df()
+
+    fig = px.box(box_data, x='dependencia', y='promedio',
+                 color='dependencia',
+                 labels={'promedio': 'Promedio Lectora + Matemática 1', 'dependencia': 'Dependencia'},
+                 title="Distribución de puntajes por dependencia")
+    fig.add_hline(y=p90, line_dash="dash", line_color="green",
+                  annotation_text=f"Top 10% ({p90:.0f})")
+    fig.add_hline(y=p80, line_dash="dot", line_color="orange",
+                  annotation_text=f"Top 20% ({p80:.0f})")
+    fig.update_layout(showlegend=False)
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+    # Sección 3: Probabilidad de estar en el Top por dependencia
+    st.subheader("📈 ¿Qué tan probable es estar en el Top según tu colegio?")
+
+    prob_data = con.execute(f"""
+        SELECT
+            d.descripcion as dependencia,
+            COUNT(*) as total,
+            SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= {p90} THEN 1 ELSE 0 END) as en_top10,
+            SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= {p80} THEN 1 ELSE 0 END) as en_top20,
+            ROUND(100.0 * SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= {p90} THEN 1 ELSE 0 END) / COUNT(*), 1) as pct_top10,
+            ROUND(100.0 * SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= {p80} THEN 1 ELSE 0 END) / COUNT(*), 1) as pct_top20
+        FROM resultados_paes r
+        JOIN ref_dependencia d ON r.dependencia = d.codigo
+        WHERE r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+        GROUP BY d.descripcion
+        ORDER BY pct_top10 DESC
+    """).df()
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        fig = px.bar(prob_data, x='dependencia', y='pct_top10',
+                     color='pct_top10', color_continuous_scale='RdYlGn',
+                     labels={'pct_top10': '% en Top 10%'},
+                     title="% de estudiantes en el Top 10% nacional")
+        fig.update_layout(xaxis_tickangle=-45, showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        fig = px.bar(prob_data, x='dependencia', y='pct_top20',
+                     color='pct_top20', color_continuous_scale='RdYlGn',
+                     labels={'pct_top20': '% en Top 20%'},
+                     title="% de estudiantes en el Top 20% nacional")
+        fig.update_layout(xaxis_tickangle=-45, showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.dataframe(prob_data, use_container_width=True, hide_index=True)
+
+    st.divider()
+
+    # Sección 4: Brechas por región
+    st.subheader("🗺️ Brechas por región")
+
+    brechas_region = con.execute(f"""
+        SELECT
+            c.region,
+            ROUND(AVG(CASE WHEN r.dependencia = 1 THEN (r.lectora_reg + r.mate1_reg)/2 END), 1) as prom_pagado,
+            ROUND(AVG(CASE WHEN r.dependencia IN (3, 4) THEN (r.lectora_reg + r.mate1_reg)/2 END), 1) as prom_publico,
+            ROUND(AVG(CASE WHEN r.dependencia = 1 THEN (r.lectora_reg + r.mate1_reg)/2 END) -
+                  AVG(CASE WHEN r.dependencia IN (3, 4) THEN (r.lectora_reg + r.mate1_reg)/2 END), 1) as brecha
+        FROM resultados_paes r
+        LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
+        WHERE r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+        GROUP BY c.region
+        HAVING prom_pagado IS NOT NULL AND prom_publico IS NOT NULL
+        ORDER BY brecha DESC
+    """).df()
+
+    fig = px.bar(brechas_region, x='region', y='brecha',
+                 color='brecha', color_continuous_scale='RdYlGn_r',
+                 labels={'brecha': 'Brecha (Pagado - Público)', 'region': 'Región'},
+                 title="Brecha de puntajes entre colegios particulares pagados y públicos por región",
+                 hover_data=['prom_pagado', 'prom_publico'])
+    fig.update_layout(xaxis_tickangle=-45)
     st.plotly_chart(fig, use_container_width=True)
 
 # Footer

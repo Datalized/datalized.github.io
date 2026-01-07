@@ -9,6 +9,33 @@ Este proyecto contiene:
 - Aplicación Streamlit interactiva para explorar los datos
 - Notebooks Jupyter para procesamiento de datos
 
+## Contexto: El debate sobre rankings educativos
+
+Esta aplicación incluye un **Análisis de Brechas Educativas** que responde a la discusión pública sobre cómo interpretar los resultados PAES.
+
+### El problema de los rankings tradicionales
+
+Los rankings de "mejores colegios" basados en promedios PAES son cuestionados por:
+
+- **Sesgo socioeconómico**: ~70% de los resultados se explican por nivel socioeconómico familiar, no por calidad educativa
+- **Invisibilización del talento público**: El 55% de los estudiantes del Top 10% nacional NO viene de colegios particulares pagados
+- **Validez cuestionada**: El DEMRE [advierte oficialmente](https://demre.cl/noticias/2025-01-10-consulta-resultados-por-colegios-actualizada) que la PAES no fue diseñada para medir calidad de establecimientos
+
+### Referencias
+
+- **[@elaval - Análisis PAES 2026](https://elaval.github.io/PAES-2026/)**: Análisis crítico de rankings tradicionales
+- **[CIPER - El ranking del privilegio](https://www.ciperchile.cl/2026/01/06/el-ranking-del-privilegio/)**: Crítica estructural a los rankings
+- **[U. Chile - Valor agregado en educación](https://brunner.cl/2010/08/valor-agregado-por-diferentes-tipos-de-colegios-en-chile/)**: Metodología de valor agregado
+- **[U. Chile - Desigualdad y rankings](https://ingenieria.uchile.cl/noticias/202460/sobre-desigualdad-rankings-y-educacion-publica)**: Perspectiva académica
+
+### Métricas alternativas implementadas
+
+Esta app incluye:
+- **Comparación contextualizada**: Comparar establecimientos solo del mismo tipo de dependencia
+- **Distribución del Top 10%**: ¿De dónde vienen realmente los mejores estudiantes?
+- **Box plots por dependencia**: Distribución completa de puntajes, no solo promedios
+- **Brechas regionales**: Diferencias entre educación pública y privada por región
+
 ## Datos
 
 | Dataset | Registros | Descripción |
@@ -49,9 +76,9 @@ Abre http://localhost:8501 en tu navegador.
 
 **Funcionalidades:**
 - Resumen general con métricas y gráficos
-- Análisis por establecimiento (ranking de colegios)
+- Análisis por establecimiento (ranking general + comparación contextualizada)
 - Análisis por región
-- Explorador SQL interactivo
+- **Análisis de brechas educativas** (nuevo): distribución del talento, box plots por dependencia, origen del Top 10%
 
 ### Jupyter Notebook
 
