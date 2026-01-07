@@ -380,28 +380,25 @@ with tab3:
         ORDER BY e.nombre
     """).df()
 
-    # Crear opciones para el selectbox con formato "Nombre - Comuna (N estudiantes)"
-    opciones_estab = {
-        f"{row['nombre']} - {row['nom_comuna']} ({row['n_estudiantes']} est.)": row['rbd']
+    # Crear lista de opciones para el selectbox
+    opciones_lista = [
+        f"{row['nombre']} - {row['nom_comuna']} ({row['n_estudiantes']} est.)"
         for _, row in establecimientos_con_paes.iterrows()
-    }
+    ]
+    rbd_lista = establecimientos_con_paes['rbd'].tolist()
 
-    # Buscador de establecimiento
-    busqueda = st.text_input("Buscar por nombre de establecimiento", placeholder="Ej: Instituto Nacional, Liceo Bicentenario...")
+    # Selectbox con búsqueda integrada (Streamlit permite escribir para filtrar)
+    st.caption("Escribe en el selector para filtrar por nombre de establecimiento")
+    seleccion_idx = st.selectbox(
+        "Seleccionar establecimiento",
+        options=range(len(opciones_lista)),
+        format_func=lambda x: opciones_lista[x],
+        index=None,
+        placeholder="Buscar establecimiento...",
+        key="selector_establecimiento"
+    )
 
-    if busqueda:
-        # Filtrar opciones que coincidan con la búsqueda
-        opciones_filtradas = {k: v for k, v in opciones_estab.items() if busqueda.lower() in k.lower()}
-
-        if opciones_filtradas:
-            seleccion = st.selectbox("Seleccionar establecimiento", options=list(opciones_filtradas.keys()))
-            rbd_seleccionado = opciones_filtradas[seleccion]
-        else:
-            st.warning("No se encontraron establecimientos con ese nombre")
-            rbd_seleccionado = None
-    else:
-        st.info("Ingresa un nombre para buscar establecimientos")
-        rbd_seleccionado = None
+    rbd_seleccionado = rbd_lista[seleccion_idx] if seleccion_idx is not None else None
 
     if rbd_seleccionado:
         # Información del establecimiento
