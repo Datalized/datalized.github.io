@@ -23,6 +23,26 @@ def get_connection():
 
 con = get_connection()
 
+# Orden geográfico de regiones (norte a sur)
+ORDEN_REGIONES = {
+    15: 1,   # Arica y Parinacota
+    1: 2,    # Tarapacá
+    2: 3,    # Antofagasta
+    3: 4,    # Atacama
+    4: 5,    # Coquimbo
+    5: 6,    # Valparaíso
+    13: 7,   # Metropolitana
+    6: 8,    # O'Higgins
+    7: 9,    # Maule
+    16: 10,  # Ñuble
+    8: 11,   # Biobío
+    9: 12,   # Araucanía
+    14: 13,  # Los Ríos
+    10: 14,  # Los Lagos
+    11: 15,  # Aysén
+    12: 16,  # Magallanes
+}
+
 # Título
 st.title("📊 PAES 2026 - Explorador de Datos")
 st.markdown("Análisis de resultados de la Prueba de Acceso a la Educación Superior de Chile")
@@ -36,6 +56,10 @@ regiones = con.execute("""
     FROM comunas
     ORDER BY cod_region
 """).df()
+
+# Ordenar regiones geográficamente
+regiones['orden'] = regiones['cod_region'].map(ORDEN_REGIONES)
+regiones = regiones.sort_values('orden')
 
 dependencias = con.execute("SELECT * FROM ref_dependencia ORDER BY codigo").df()
 ramas = con.execute("SELECT * FROM ref_rama ORDER BY codigo").df()
@@ -62,17 +86,17 @@ rama_sel = st.sidebar.multiselect(
 # Construir cláusula WHERE
 where_clauses = []
 if region_sel:
-    where_clauses.append(f"cod_region IN ({','.join(map(str, region_sel))})")
+    where_clauses.append(f"r.cod_region IN ({','.join(map(str, region_sel))})")
 if dep_sel:
-    where_clauses.append(f"dependencia IN ({','.join(map(str, dep_sel))})")
+    where_clauses.append(f"r.dependencia IN ({','.join(map(str, dep_sel))})")
 if rama_sel:
     rama_str = ','.join([f"'{r}'" for r in rama_sel])
-    where_clauses.append(f"rama IN ({rama_str})")
+    where_clauses.append(f"r.rama IN ({rama_str})")
 
 where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
 
 # Tabs principales
-tab1, tab2, tab3, tab4 = st.tabs(["📈 Resumen", "🏫 Por Establecimiento", "🗺️ Por Región", "🔍 Explorar Datos"])
+tab1, tab2, tab3 = st.tabs(["📈 Resumen", "🏫 Por Establecimiento", "🗺️ Por Región"])
 
 with tab1:
     st.header("Resumen General")
@@ -85,7 +109,7 @@ with tab1:
             ROUND(AVG(lectora_reg), 1) as prom_lectora,
             ROUND(AVG(mate1_reg), 1) as prom_mate1,
             ROUND(AVG(puntaje_nem), 1) as prom_nem
-        FROM resultados_paes
+        FROM resultados_paes r
         WHERE {where_sql}
     """).df()
 
@@ -152,7 +176,7 @@ with tab1:
 
     hist_data = con.execute(f"""
         SELECT {prueba_sel} as puntaje
-        FROM resultados_paes
+        FROM resultados_paes r
         WHERE {where_sql} AND {prueba_sel} IS NOT NULL
     """).df()
 
@@ -209,8 +233,10 @@ with tab2:
 with tab3:
     st.header("Análisis por Región")
 
+    # Datos por región ordenados geográficamente
     region_data = con.execute(f"""
         SELECT
+            c.cod_region,
             c.region,
             COUNT(*) as postulantes,
             COUNT(r.lectora_reg) as rindieron,
@@ -221,70 +247,72 @@ with tab3:
         FROM resultados_paes r
         LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
         WHERE {where_sql}
-        GROUP BY c.region
-        ORDER BY prom_lectora DESC NULLS LAST
+        GROUP BY c.cod_region, c.region
+        ORDER BY c.cod_region
     """).df()
+
+    # Ordenar geográficamente
+    region_data['orden'] = region_data['cod_region'].map(ORDEN_REGIONES)
+    region_data = region_data.sort_values('orden').drop(columns=['orden', 'cod_region'])
 
     st.dataframe(region_data, use_container_width=True, hide_index=True)
 
-    col1, col2 = st.columns(2)
+    st.divider()
 
-    with col1:
-        fig = px.bar(region_data, x='region', y='prom_lectora',
-                     color='prom_lectora', color_continuous_scale='RdYlGn',
-                     title="Promedio Competencia Lectora por Región")
-        fig.update_layout(xaxis_tickangle=-45)
-        st.plotly_chart(fig, use_container_width=True)
+    # Top comunas por promedio Matemática 1
+    st.subheader("Top 20 Comunas por Promedio Matemática 1")
 
-    with col2:
-        fig = px.scatter(region_data, x='prom_nem', y='prom_lectora',
-                         size='postulantes', hover_name='region',
-                         title="NEM vs Lectora por Región")
-        st.plotly_chart(fig, use_container_width=True)
+    comuna_data = con.execute(f"""
+        SELECT
+            c.comuna,
+            c.region,
+            COUNT(*) as alumnos,
+            ROUND(AVG(r.mate1_reg), 1) as prom_mate1,
+            ROUND(AVG(r.lectora_reg), 1) as prom_lectora
+        FROM resultados_paes r
+        LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
+        WHERE {where_sql} AND r.mate1_reg IS NOT NULL
+        GROUP BY c.comuna, c.region
+        HAVING COUNT(*) >= 10
+        ORDER BY prom_mate1 DESC
+        LIMIT 20
+    """).df()
 
-with tab4:
-    st.header("Explorar Datos")
-
-    st.subheader("Consulta SQL")
-
-    default_query = """SELECT
-    id, rbd, rama, dependencia,
-    puntaje_nem, puntaje_ranking,
-    lectora_reg, mate1_reg, mate2_reg
-FROM resultados_paes
-WHERE lectora_reg IS NOT NULL
-LIMIT 100"""
-
-    query = st.text_area("Escribir consulta SQL", value=default_query, height=150)
-
-    if st.button("Ejecutar", type="primary"):
-        try:
-            result = con.execute(query).df()
-            st.success(f"Resultados: {len(result)} filas")
-            st.dataframe(result, use_container_width=True, hide_index=True)
-
-            # Opción de descargar
-            csv = result.to_csv(index=False)
-            st.download_button(
-                "Descargar CSV",
-                csv,
-                "resultado_paes.csv",
-                "text/csv"
-            )
-        except Exception as e:
-            st.error(f"Error: {e}")
+    fig = px.bar(comuna_data, x='comuna', y='prom_mate1',
+                 color='prom_mate1', color_continuous_scale='RdYlGn',
+                 hover_data=['region', 'alumnos', 'prom_lectora'],
+                 labels={'prom_mate1': 'Promedio Matemática 1', 'comuna': 'Comuna'})
+    fig.update_layout(xaxis_tickangle=-45)
+    st.plotly_chart(fig, use_container_width=True)
 
     st.divider()
 
-    st.subheader("Estructura de Tablas")
+    # Scatter de establecimientos
+    st.subheader("Establecimientos: Lectora vs Matemática 1")
 
-    tabla_sel = st.selectbox("Seleccionar tabla",
-                              ["resultados_paes", "establecimientos", "comunas",
-                               "cod_ensenanza", "ref_dependencia", "ref_rama",
-                               "ref_situacion_egreso", "ref_modulo_ciencias"])
+    est_scatter = con.execute(f"""
+        SELECT
+            e.nombre as establecimiento,
+            c.comuna,
+            c.region,
+            COUNT(*) as alumnos,
+            ROUND(AVG(r.mate1_reg), 1) as prom_mate1,
+            ROUND(AVG(r.lectora_reg), 1) as prom_lectora
+        FROM resultados_paes r
+        JOIN establecimientos e ON r.rbd = e.rbd
+        LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
+        WHERE {where_sql} AND r.mate1_reg IS NOT NULL AND r.lectora_reg IS NOT NULL
+        GROUP BY e.nombre, c.comuna, c.region
+        HAVING COUNT(*) >= 5
+    """).df()
 
-    schema = con.execute(f"DESCRIBE {tabla_sel}").df()
-    st.dataframe(schema, use_container_width=True, hide_index=True)
+    fig = px.scatter(est_scatter, x='prom_lectora', y='prom_mate1',
+                     size='alumnos', hover_name='establecimiento',
+                     hover_data=['comuna', 'region', 'alumnos'],
+                     labels={'prom_lectora': 'Promedio Lectora', 'prom_mate1': 'Promedio Matemática 1'},
+                     color='prom_mate1', color_continuous_scale='RdYlGn')
+    fig.update_layout(height=600)
+    st.plotly_chart(fig, use_container_width=True)
 
 # Footer
 st.divider()
