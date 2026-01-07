@@ -18,11 +18,18 @@ st.set_page_config(
 )
 
 # Conexión a la base de datos
-@st.cache_resource
-def get_connection():
+# Siguiendo recomendaciones de https://duckdb.org/2025/03/28/using-duckdb-in-streamlit
+# - Usar conexión por sesión de usuario (no global compartida entre usuarios)
+# - TTL para refrescar conexiones periódicamente y evitar corrupción
+import datetime
+
+@st.cache_resource(ttl=datetime.timedelta(hours=1))
+def get_connection(_session_id):
+    """Conexión DuckDB por sesión de usuario con TTL de 1 hora."""
     return duckdb.connect("paes.duckdb", read_only=True)
 
-con = get_connection()
+# Usar session_id para que cada usuario tenga su propia conexión cacheada
+con = get_connection(st.session_state.get("_session_id", id(st.session_state)))
 
 # Orden geográfico de regiones (norte a sur)
 ORDEN_REGIONES = {
