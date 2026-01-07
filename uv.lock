@@ -1163,6 +1163,7 @@ dependencies = [
     { name = "pandas" },
     { name = "plotly" },
     { name = "streamlit" },
+    { name = "streamlit-searchbox" },
 ]
 
 [package.metadata]
@@ -1173,6 +1174,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "plotly", specifier = ">=6.5.0" },
     { name = "streamlit", specifier = ">=1.52.2" },
+    { name = "streamlit-searchbox", specifier = ">=0.1.24" },
 ]
 
 [[package]]
@@ -1860,6 +1862,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/43/20/434aaceccc6e1912671d869926103051330437adba72d538d787a07727ef/streamlit-1.52.2.tar.gz", hash = "sha256:64a4dda8bc5cdd37bfd490e93bb53da35aaef946fcfc283a7980dacdf165108b", size = 8584178, upload-time = "2025-12-17T17:07:59.642Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c0/95/6b7873f0267973ebd55ba9cd33a690b35a116f2779901ef6185a0e21864d/streamlit-1.52.2-py3-none-any.whl", hash = "sha256:a16bb4fbc9781e173ce9dfbd8ffb189c174f148f9ca4fb8fa56423e84e193fc8", size = 9025937, upload-time = "2025-12-17T17:07:57.67Z" },
+]
+
+[[package]]
+name = "streamlit-searchbox"
+version = "0.1.24"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "streamlit" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/46/c1/b037f76f7d6da73af6311720df3c56ed534616572da4261c0dea1e37110e/streamlit_searchbox-0.1.24.tar.gz", hash = "sha256:b6009c368812feea0dd211f03c9cc5cc85b540b0d0a57165bb2885f67d6a8a3d", size = 844522, upload-time = "2025-12-23T07:44:55.367Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4e/4d/cd7f4ca601f700b88a2ddf9b4dff9595ca15c77ab1c786b894d0668fe319/streamlit_searchbox-0.1.24-py3-none-any.whl", hash = "sha256:52ebae43acf8a5c7b6a0e681efc58170c880da308c846dd2db907da84633e468", size = 847934, upload-time = "2025-12-23T07:44:53.885Z" },
 ]
 
 [[package]]

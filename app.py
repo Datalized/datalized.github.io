@@ -8,6 +8,7 @@ import duckdb
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from streamlit_searchbox import st_searchbox
 
 # Configuración de la página
 st.set_page_config(
@@ -380,40 +381,25 @@ with tab3:
         ORDER BY e.nombre
     """).df()
 
-    # Crear diccionario de opciones: label -> rbd
-    opciones_dict = {
-        f"{row['nombre']} - {row['nom_comuna']} ({row['n_estudiantes']} est.)": row['rbd']
+    # Crear lista de opciones como tuplas (label, rbd) para el searchbox
+    opciones_lista = [
+        (f"{row['nombre']} - {row['nom_comuna']} ({row['n_estudiantes']} est.)", row['rbd'])
         for _, row in establecimientos_con_paes.iterrows()
-    }
+    ]
 
-    # Búsqueda con text_input y selectbox filtrado
-    busqueda = st.text_input(
-        "🔍 Buscar establecimiento",
-        placeholder="Ej: Pumahue, Instituto Nacional...",
-        key="busqueda_establecimiento",
-        label_visibility="collapsed"
+    # Función de búsqueda para el searchbox
+    def buscar_establecimiento(searchterm: str):
+        if not searchterm:
+            return []
+        return [opt for opt in opciones_lista if searchterm.lower() in opt[0].lower()][:20]
+
+    # Searchbox con autocompletado
+    rbd_seleccionado = st_searchbox(
+        buscar_establecimiento,
+        placeholder="Buscar establecimiento (ej: Instituto Nacional...)",
+        key="searchbox_establecimiento",
+        clear_on_submit=False,
     )
-
-    # Filtrar opciones según búsqueda
-    if busqueda:
-        opciones_filtradas = {k: v for k, v in opciones_dict.items()
-                             if busqueda.lower() in k.lower()}
-    else:
-        opciones_filtradas = {}
-
-    # Mostrar resultados
-    rbd_seleccionado = None
-    if busqueda:
-        if opciones_filtradas:
-            lista_opciones = list(opciones_filtradas.keys())
-            seleccion = st.selectbox(
-                "Seleccionar de los resultados",
-                options=lista_opciones,
-                key="selector_resultado"
-            )
-            rbd_seleccionado = opciones_filtradas[seleccion]
-        else:
-            st.warning(f"No se encontraron establecimientos con '{busqueda}'")
 
     if rbd_seleccionado:
         # Información del establecimiento
