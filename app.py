@@ -81,6 +81,29 @@ st.markdown("Análisis de resultados de la Prueba de Acceso a la Educación Supe
 # Sidebar con filtros
 st.sidebar.header("Filtros")
 
+# Filtros de limpieza de datos (para coincidir con cifras oficiales)
+st.sidebar.subheader("🎓 Filtros Oficiales")
+
+filtro_puntajes = st.sidebar.checkbox(
+    "Solo con puntajes válidos",
+    value=True,
+    help="Excluye estudiantes con valores 0 o nulos en NEM, Ranking, Matemática 1 o Lectora"
+)
+
+filtro_primera_vez = st.sidebar.checkbox(
+    "Solo primera vez",
+    value=True,
+    help="Excluye estudiantes que ya rindieron en procesos anteriores"
+)
+
+filtro_promocion_actual = st.sidebar.checkbox(
+    "Solo promoción actual",
+    value=True,
+    help="Solo incluye estudiantes de la promoción del año 2026"
+)
+
+st.sidebar.divider()
+
 # Cargar datos de referencia para filtros
 regiones = con.execute("""
     SELECT DISTINCT cod_region, region
@@ -116,6 +139,16 @@ rama_sel = st.sidebar.multiselect(
 
 # Construir cláusula WHERE
 where_clauses = []
+
+# Filtros oficiales (para coincidir con cifras aceptadas)
+if filtro_puntajes:
+    where_clauses.append("r.puntaje_nem > 0 AND r.puntaje_ranking > 0 AND r.mate1_reg > 0 AND r.lectora_reg > 0")
+if filtro_primera_vez:
+    where_clauses.append("r.rindio_anterior = false")
+if filtro_promocion_actual:
+    where_clauses.append("r.situacion_egreso = 1")
+
+# Filtros de usuario
 if region_sel:
     where_clauses.append(f"r.cod_region IN ({','.join(map(str, region_sel))})")
 if dep_sel:
@@ -260,11 +293,11 @@ with tab2:
             "Más alumnos en top 10%": "en_top10 DESC"
         }[orden]
 
-        # Calcular umbral top 10%
-        p90_threshold = con.execute("""
+        # Calcular umbral top 10% (aplicando filtros oficiales)
+        p90_threshold = con.execute(f"""
             SELECT PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY (lectora_reg + mate1_reg)/2) as p90
-            FROM resultados_paes
-            WHERE lectora_reg IS NOT NULL AND mate1_reg IS NOT NULL
+            FROM resultados_paes r
+            WHERE {where_sql}
         """).df()['p90'].values[0]
 
         est_data = con.execute(f"""
@@ -370,8 +403,8 @@ with tab3:
 
     st.markdown("Busca un establecimiento para ver los resultados individuales de sus estudiantes y comparar con colegios cercanos.")
 
-    # Obtener lista de establecimientos con resultados PAES
-    establecimientos_con_paes = con.execute("""
+    # Obtener lista de establecimientos con resultados PAES (aplicando filtros oficiales)
+    establecimientos_con_paes = con.execute(f"""
         SELECT DISTINCT
             e.rbd,
             e.nombre,
@@ -382,7 +415,7 @@ with tab3:
             COUNT(r.id) as n_estudiantes
         FROM establecimientos e
         INNER JOIN resultados_paes r ON e.rbd = r.rbd
-        WHERE r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+        WHERE {where_sql}
         GROUP BY e.rbd, e.nombre, e.nom_comuna, e.nom_region, e.latitud, e.longitud
         HAVING COUNT(r.id) >= 1
         ORDER BY e.nombre
@@ -446,7 +479,7 @@ with tab3:
 
             st.divider()
 
-            # Datos de los estudiantes del establecimiento
+            # Datos de los estudiantes del establecimiento (aplicando filtros oficiales)
             estudiantes = con.execute(f"""
                 SELECT
                     r.lectora_reg,
@@ -462,7 +495,7 @@ with tab3:
                 LEFT JOIN ref_dependencia d ON r.dependencia = d.codigo
                 LEFT JOIN ref_rama rm ON r.rama = rm.codigo
                 WHERE r.rbd = {rbd_seleccionado}
-                AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+                AND {where_sql}
             """).df()
 
             if not estudiantes.empty:
@@ -513,7 +546,7 @@ with tab3:
                     lat_ref = estab_info['latitud']
                     lon_ref = estab_info['longitud']
 
-                    # Obtener colegios cercanos (misma comuna o por distancia)
+                    # Obtener colegios cercanos (aplicando filtros oficiales)
                     colegios_cercanos = con.execute(f"""
                         SELECT
                             e.rbd,
@@ -529,7 +562,7 @@ with tab3:
                         FROM establecimientos e
                         INNER JOIN resultados_paes r ON e.rbd = r.rbd
                         LEFT JOIN ref_dependencia_mineduc2 dm ON e.cod_depe2 = dm.codigo
-                        WHERE r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+                        WHERE {where_sql}
                         AND e.latitud IS NOT NULL AND e.longitud IS NOT NULL
                         AND e.rbd != {rbd_seleccionado}
                         GROUP BY e.rbd, e.nombre, e.nom_comuna, e.latitud, e.longitud, dm.descripcion
@@ -605,7 +638,7 @@ with tab3:
                         INNER JOIN resultados_paes r ON e.rbd = r.rbd
                         LEFT JOIN ref_dependencia_mineduc2 dm ON e.cod_depe2 = dm.codigo
                         WHERE e.nom_comuna = '{comuna}'
-                        AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+                        AND {where_sql}
                         GROUP BY e.nombre, dm.descripcion
                         HAVING COUNT(r.id) >= 5
                         ORDER BY prom_lect_mate DESC
@@ -732,13 +765,13 @@ with tab5:
 
     st.divider()
 
-    # Calcular umbrales del top 10% y 20%
-    thresholds = con.execute("""
+    # Calcular umbrales del top 10% y 20% (aplicando filtros oficiales)
+    thresholds = con.execute(f"""
         SELECT
             PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY (lectora_reg + mate1_reg)/2) as p90,
             PERCENTILE_CONT(0.8) WITHIN GROUP (ORDER BY (lectora_reg + mate1_reg)/2) as p80
-        FROM resultados_paes
-        WHERE lectora_reg IS NOT NULL AND mate1_reg IS NOT NULL
+        FROM resultados_paes r
+        WHERE {where_sql}
     """).df()
     p90 = thresholds['p90'].values[0]
     p80 = thresholds['p80'].values[0]
@@ -749,9 +782,9 @@ with tab5:
     col2.metric("Umbral Top 20%", f"{p80:.0f} pts", help="Promedio Lectora + Matemática 1")
 
     total_top10 = con.execute(f"""
-        SELECT COUNT(*) FROM resultados_paes
-        WHERE (lectora_reg + mate1_reg)/2 >= {p90}
-        AND lectora_reg IS NOT NULL AND mate1_reg IS NOT NULL
+        SELECT COUNT(*) FROM resultados_paes r
+        WHERE (r.lectora_reg + r.mate1_reg)/2 >= {p90}
+        AND {where_sql}
     """).df().iloc[0, 0]
     col3.metric("Estudiantes en Top 10%", f"{total_top10:,}")
 
@@ -768,7 +801,7 @@ with tab5:
         FROM resultados_paes r
         JOIN ref_dependencia d ON r.dependencia = d.codigo
         WHERE (r.lectora_reg + r.mate1_reg)/2 >= {p90}
-        AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+        AND {where_sql}
         GROUP BY d.descripcion
         ORDER BY estudiantes DESC
     """).df()
@@ -790,7 +823,7 @@ with tab5:
         JOIN establecimientos e ON r.rbd = e.rbd
         JOIN ref_dependencia d ON r.dependencia = d.codigo
         WHERE (r.lectora_reg + r.mate1_reg)/2 >= {p90}
-        AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+        AND {where_sql}
         GROUP BY e.nombre, d.descripcion
         HAVING COUNT(*) >= 1
         ORDER BY estudiantes_top10 DESC
@@ -851,7 +884,7 @@ with tab5:
             ROUND(100.0 * SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= {p80} THEN 1 ELSE 0 END) / COUNT(*), 1) as pct_top20
         FROM resultados_paes r
         JOIN ref_dependencia d ON r.dependencia = d.codigo
-        WHERE r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+        WHERE {where_sql}
         GROUP BY d.descripcion
         ORDER BY pct_top10 DESC
     """).df()
