@@ -10,8 +10,9 @@ wheels/
 .venv/
 
 # DuckDB (regenerar con notebook)
-*.duckdb
 *.duckdb.wal
+# Mantener paes.duckdb para deploy en Streamlit Cloud
+!paes.duckdb
 
 # Jupyter
 .ipynb_checkpoints/

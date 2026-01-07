@@ -49,6 +49,13 @@ Builds database from:
 - `data/Libro_CódigosADM2026_ArchivoC.xlsx` - MINEDUC codebook
 - `data/new_schools_list.json` - School registry
 
+## Deployment (Streamlit Community Cloud)
+
+- `requirements.txt` contains production dependencies (without jupyter/openpyxl dev tools)
+- `paes.duckdb` must be committed to git (excluded from .gitignore via negation)
+- After regenerating database with notebook, commit the new `paes.duckdb`
+- App uses read-only DuckDB connection with `@st.cache_resource` caching
+
 ## Key Patterns
 
 - Institution queries use `HAVING COUNT(*) >= 5` to filter for statistical significance
