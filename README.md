@@ -45,6 +45,8 @@ Esta app incluye:
 | `comunas` | 346 | Regiones, provincias y comunas |
 | `cod_ensenanza` | 26 | Códigos MINEDUC de enseñanza |
 
+**Tablas de referencia:** `ref_dependencia` (clasificación PAES), `ref_dependencia_mineduc` (COD_DEPE, 6 categorías), `ref_dependencia_mineduc2` (COD_DEPE2, 5 categorías agrupadas), `ref_rama`, `ref_situacion_egreso`, `ref_modulo_ciencias`, `ref_orientacion_religiosa`, `ref_estado_establecimiento`
+
 ### Nueva información de establecimientos (MINEDUC 2025)
 
 La tabla `establecimientos` ahora incluye datos del [Directorio Oficial de Establecimientos del MINEDUC](https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/):
@@ -107,10 +109,13 @@ paes2026/
 ├── app.py                  # Aplicación Streamlit
 ├── paes.duckdb             # Base de datos DuckDB
 ├── pyproject.toml          # Dependencias del proyecto
+├── requirements.txt        # Dependencias para Streamlit Cloud
+├── CLAUDE.md               # Instrucciones para Claude Code
+├── LICENSE                 # Licencia MIT
 ├── data/
 │   ├── ArchivoC_Adm2026REG.csv                          # Resultados PAES (DEMRE)
 │   ├── Libro_CódigosADM2026_ArchivoC.xlsx               # Libro de códigos (DEMRE)
-│   ├── 20250926_Directorio_Oficial_EE_2025_*.csv        # Directorio establecimientos (MINEDUC)
+│   ├── 20250926_Directorio_Oficial_EE_2025_20250430_WEB.csv  # Directorio establecimientos (MINEDUC)
 │   └── ER_Directorio_Oficial_EE_WEB.pdf                 # Esquema del directorio
 ├── docs/
 │   └── paes.md             # Documentación sobre la PAES
@@ -150,6 +155,7 @@ Ver [docs/paes.md](docs/paes.md) para más detalles sobre la PAES.
 
 - [DuckDB](https://duckdb.org/) - Base de datos analítica
 - [Streamlit](https://streamlit.io/) - Framework de aplicaciones web
+- [streamlit-searchbox](https://github.com/m-wrzr/streamlit-searchbox) - Componente de búsqueda con autocompletado
 - [Plotly](https://plotly.com/) - Visualizaciones interactivas
 - [uv](https://docs.astral.sh/uv/) - Gestor de paquetes Python
 

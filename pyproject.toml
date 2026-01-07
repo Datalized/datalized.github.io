@@ -1,7 +1,7 @@
 [project]
 name = "paes2026"
 version = "0.1.0"
-description = "Add your description here"
+description = "Explorador de datos PAES 2026 - Análisis de resultados de la Prueba de Acceso a la Educación Superior de Chile"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
