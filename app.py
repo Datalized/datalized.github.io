@@ -380,25 +380,40 @@ with tab3:
         ORDER BY e.nombre
     """).df()
 
-    # Crear lista de opciones para el selectbox
-    opciones_lista = [
-        f"{row['nombre']} - {row['nom_comuna']} ({row['n_estudiantes']} est.)"
+    # Crear diccionario de opciones: label -> rbd
+    opciones_dict = {
+        f"{row['nombre']} - {row['nom_comuna']} ({row['n_estudiantes']} est.)": row['rbd']
         for _, row in establecimientos_con_paes.iterrows()
-    ]
-    rbd_lista = establecimientos_con_paes['rbd'].tolist()
+    }
 
-    # Selectbox con búsqueda integrada (Streamlit permite escribir para filtrar)
-    st.caption("Escribe en el selector para filtrar por nombre de establecimiento")
-    seleccion_idx = st.selectbox(
-        "Seleccionar establecimiento",
-        options=range(len(opciones_lista)),
-        format_func=lambda x: opciones_lista[x],
-        index=None,
-        placeholder="Buscar establecimiento...",
-        key="selector_establecimiento"
+    # Búsqueda con text_input y selectbox filtrado
+    busqueda = st.text_input(
+        "🔍 Buscar establecimiento",
+        placeholder="Ej: Pumahue, Instituto Nacional...",
+        key="busqueda_establecimiento",
+        label_visibility="collapsed"
     )
 
-    rbd_seleccionado = rbd_lista[seleccion_idx] if seleccion_idx is not None else None
+    # Filtrar opciones según búsqueda
+    if busqueda:
+        opciones_filtradas = {k: v for k, v in opciones_dict.items()
+                             if busqueda.lower() in k.lower()}
+    else:
+        opciones_filtradas = {}
+
+    # Mostrar resultados
+    rbd_seleccionado = None
+    if busqueda:
+        if opciones_filtradas:
+            lista_opciones = list(opciones_filtradas.keys())
+            seleccion = st.selectbox(
+                "Seleccionar de los resultados",
+                options=lista_opciones,
+                key="selector_resultado"
+            )
+            rbd_seleccionado = opciones_filtradas[seleccion]
+        else:
+            st.warning(f"No se encontraron establecimientos con '{busqueda}'")
 
     if rbd_seleccionado:
         # Información del establecimiento
