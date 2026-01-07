@@ -41,9 +41,19 @@ Esta app incluye:
 | Dataset | Registros | Descripción |
 |---------|-----------|-------------|
 | `resultados_paes` | 306,022 | Puntajes y datos de postulantes |
-| `establecimientos` | 8,977 | Colegios (RBD, nombre, ubicación) |
+| `establecimientos` | ~12,000 | Colegios con ubicación geográfica (lat/lon), matrícula, dependencia |
 | `comunas` | 346 | Regiones, provincias y comunas |
 | `cod_ensenanza` | 26 | Códigos MINEDUC de enseñanza |
+
+### Nueva información de establecimientos (MINEDUC 2025)
+
+La tabla `establecimientos` ahora incluye datos del [Directorio Oficial de Establecimientos del MINEDUC](https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/):
+
+- **Geolocalización**: Latitud y longitud para búsqueda de colegios cercanos
+- **Matrícula**: Por nivel educativo (parvulario, básica, media HC/TP)
+- **Dependencia detallada**: COD_DEPE (6 categorías) y COD_DEPE2 (5 categorías agrupadas)
+- **Programas**: Convenio PIE, Programa PACE
+- **Características**: Ruralidad, orientación religiosa, costos (matrícula y mensualidad)
 
 ## Instalación
 
@@ -77,8 +87,12 @@ Abre http://localhost:8501 en tu navegador.
 **Funcionalidades:**
 - Resumen general con métricas y gráficos
 - Análisis por establecimiento (ranking general + comparación contextualizada)
+- **Buscar Establecimiento**: Búsqueda individual de colegios con:
+  - Scatter plot de resultados individuales (Matemática vs Lectora)
+  - Datos agregados del establecimiento
+  - Colegios cercanos basados en geolocalización
 - Análisis por región
-- **Análisis de brechas educativas** (nuevo): distribución del talento, box plots por dependencia, origen del Top 10%
+- **Análisis de brechas educativas**: distribución del talento, box plots por dependencia, origen del Top 10%
 
 ### Jupyter Notebook
 
@@ -94,9 +108,10 @@ paes2026/
 ├── paes.duckdb             # Base de datos DuckDB
 ├── pyproject.toml          # Dependencias del proyecto
 ├── data/
-│   ├── ArchivoC_Adm2026REG.csv           # Resultados PAES
-│   ├── Libro_CódigosADM2026_ArchivoC.xlsx # Libro de códigos
-│   └── new_schools_list.json              # Establecimientos
+│   ├── ArchivoC_Adm2026REG.csv                          # Resultados PAES (DEMRE)
+│   ├── Libro_CódigosADM2026_ArchivoC.xlsx               # Libro de códigos (DEMRE)
+│   ├── 20250926_Directorio_Oficial_EE_2025_*.csv        # Directorio establecimientos (MINEDUC)
+│   └── ER_Directorio_Oficial_EE_WEB.pdf                 # Esquema del directorio
 ├── docs/
 │   └── paes.md             # Documentación sobre la PAES
 └── notebooks/
@@ -128,7 +143,7 @@ Ver [docs/paes.md](docs/paes.md) para más detalles sobre la PAES.
 | Fuente | URL | Descripción |
 |--------|-----|-------------|
 | DEMRE | [portal-transparencia.demre.cl](https://portal-transparencia.demre.cl/portal-base-datos) | Resultados PAES 2026 |
-| GitHub Gist | [taylordowns2000](https://gist.github.com/taylordowns2000/5a45618a8e53359bf8a82eea65a51c03) | Establecimientos educacionales |
+| MINEDUC | [datosabiertos.mineduc.cl](https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/) | Directorio Oficial de Establecimientos 2025 |
 | DEMRE | Libro de Códigos ADM2026 | Códigos y comunas |
 
 ## Tecnologías

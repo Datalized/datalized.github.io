@@ -52,6 +52,20 @@ COLORES_DEPENDENCIA = {
     'Corp. Administración Delegada': '#9B5DE5'  # Púrpura
 }
 
+def calcular_distancia_km(lat1, lon1, lat2, lon2):
+    """Calcula la distancia en km entre dos puntos usando fórmula de Haversine"""
+    from math import radians, sin, cos, sqrt, atan2
+    R = 6371  # Radio de la Tierra en km
+
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1-a))
+
+    return R * c
+
 # Título
 st.title("📊 PAES 2026 - Explorador de Datos")
 st.markdown("Análisis de resultados de la Prueba de Acceso a la Educación Superior de Chile")
@@ -105,7 +119,7 @@ if rama_sel:
 where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
 
 # Tabs principales
-tab1, tab2, tab3, tab4 = st.tabs(["📈 Resumen", "🏫 Por Establecimiento", "🗺️ Por Región", "📊 Análisis de Brechas"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📈 Resumen", "🏫 Por Establecimiento", "🔍 Buscar Establecimiento", "🗺️ Por Región", "📊 Análisis de Brechas"])
 
 with tab1:
     st.header("Resumen General")
@@ -344,6 +358,260 @@ with tab2:
             st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
+    st.header("Buscar Establecimiento")
+
+    st.markdown("Busca un establecimiento para ver los resultados individuales de sus estudiantes y comparar con colegios cercanos.")
+
+    # Obtener lista de establecimientos con resultados PAES
+    establecimientos_con_paes = con.execute("""
+        SELECT DISTINCT
+            e.rbd,
+            e.nombre,
+            e.nom_comuna,
+            e.nom_region,
+            e.latitud,
+            e.longitud,
+            COUNT(r.id) as n_estudiantes
+        FROM establecimientos e
+        INNER JOIN resultados_paes r ON e.rbd = r.rbd
+        WHERE r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+        GROUP BY e.rbd, e.nombre, e.nom_comuna, e.nom_region, e.latitud, e.longitud
+        HAVING COUNT(r.id) >= 1
+        ORDER BY e.nombre
+    """).df()
+
+    # Crear opciones para el selectbox con formato "Nombre - Comuna (N estudiantes)"
+    opciones_estab = {
+        f"{row['nombre']} - {row['nom_comuna']} ({row['n_estudiantes']} est.)": row['rbd']
+        for _, row in establecimientos_con_paes.iterrows()
+    }
+
+    # Buscador de establecimiento
+    busqueda = st.text_input("Buscar por nombre de establecimiento", placeholder="Ej: Instituto Nacional, Liceo Bicentenario...")
+
+    if busqueda:
+        # Filtrar opciones que coincidan con la búsqueda
+        opciones_filtradas = {k: v for k, v in opciones_estab.items() if busqueda.lower() in k.lower()}
+
+        if opciones_filtradas:
+            seleccion = st.selectbox("Seleccionar establecimiento", options=list(opciones_filtradas.keys()))
+            rbd_seleccionado = opciones_filtradas[seleccion]
+        else:
+            st.warning("No se encontraron establecimientos con ese nombre")
+            rbd_seleccionado = None
+    else:
+        st.info("Ingresa un nombre para buscar establecimientos")
+        rbd_seleccionado = None
+
+    if rbd_seleccionado:
+        # Información del establecimiento
+        info_estab = con.execute(f"""
+            SELECT
+                e.nombre,
+                e.nom_comuna,
+                e.nom_region,
+                e.latitud,
+                e.longitud,
+                e.mat_total,
+                e.rural,
+                e.convenio_pie,
+                e.pace,
+                e.pago_mensual,
+                dm.descripcion as dependencia
+            FROM establecimientos e
+            LEFT JOIN ref_dependencia_mineduc2 dm ON e.cod_depe2 = dm.codigo
+            WHERE e.rbd = {rbd_seleccionado}
+        """).df()
+
+        if not info_estab.empty:
+            estab_info = info_estab.iloc[0]
+
+            st.subheader(f"📍 {estab_info['nombre']}")
+
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Comuna", estab_info['nom_comuna'])
+            col2.metric("Región", estab_info['nom_region'])
+            col3.metric("Dependencia", estab_info['dependencia'] or "Sin info")
+
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("Matrícula Total", f"{estab_info['mat_total'] or 0:,}")
+            col2.metric("Zona", "Rural" if estab_info['rural'] == 1 else "Urbana")
+            col3.metric("Convenio PIE", "Sí" if estab_info['convenio_pie'] == 1 else "No")
+            col4.metric("Programa PACE", "Sí" if estab_info['pace'] == 1 else "No")
+
+            st.divider()
+
+            # Datos de los estudiantes del establecimiento
+            estudiantes = con.execute(f"""
+                SELECT
+                    r.lectora_reg,
+                    r.mate1_reg,
+                    r.mate2_reg,
+                    r.historia_reg,
+                    r.ciencias_reg,
+                    r.puntaje_nem,
+                    r.puntaje_ranking,
+                    d.descripcion as dependencia,
+                    rm.descripcion as rama
+                FROM resultados_paes r
+                LEFT JOIN ref_dependencia d ON r.dependencia = d.codigo
+                LEFT JOIN ref_rama rm ON r.rama = rm.codigo
+                WHERE r.rbd = {rbd_seleccionado}
+                AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+            """).df()
+
+            if not estudiantes.empty:
+                # Estadísticas agregadas
+                st.subheader("📊 Resultados PAES del Establecimiento")
+
+                col1, col2, col3, col4 = st.columns(4)
+                col1.metric("Estudiantes", len(estudiantes))
+                col2.metric("Prom. Lectora", f"{estudiantes['lectora_reg'].mean():.1f}")
+                col3.metric("Prom. Matemática 1", f"{estudiantes['mate1_reg'].mean():.1f}")
+                prom_lm = (estudiantes['lectora_reg'] + estudiantes['mate1_reg']) / 2
+                col4.metric("Prom. Lect+Mate", f"{prom_lm.mean():.1f}")
+
+                # Scatter plot de resultados individuales
+                st.subheader("🔵 Resultados Individuales: Matemática 1 vs Lectora")
+
+                fig = px.scatter(estudiantes, x='lectora_reg', y='mate1_reg',
+                                 hover_data=['puntaje_nem', 'rama'],
+                                 labels={'lectora_reg': 'Competencia Lectora', 'mate1_reg': 'Matemática 1'},
+                                 opacity=0.7)
+                fig.update_traces(marker=dict(size=10, color='#457B9D'))
+
+                # Añadir líneas de referencia (promedios nacionales aproximados)
+                fig.add_hline(y=500, line_dash="dot", line_color="gray", annotation_text="Prom. Nacional M1")
+                fig.add_vline(x=500, line_dash="dot", line_color="gray", annotation_text="Prom. Nacional Lect")
+
+                fig.update_layout(height=500)
+                st.plotly_chart(fig, use_container_width=True)
+
+                # Box plots de puntajes
+                st.subheader("📦 Distribución de Puntajes")
+
+                pruebas_data = pd.DataFrame({
+                    'Prueba': ['Lectora']*len(estudiantes) + ['Matemática 1']*len(estudiantes),
+                    'Puntaje': list(estudiantes['lectora_reg']) + list(estudiantes['mate1_reg'])
+                })
+
+                fig = px.box(pruebas_data, x='Prueba', y='Puntaje', color='Prueba')
+                fig.update_layout(showlegend=False, height=400)
+                st.plotly_chart(fig, use_container_width=True)
+
+                st.divider()
+
+                # Sección de colegios cercanos
+                st.subheader("🏫 Colegios Cercanos y Comparación")
+
+                if estab_info['latitud'] and estab_info['longitud']:
+                    lat_ref = estab_info['latitud']
+                    lon_ref = estab_info['longitud']
+
+                    # Obtener colegios cercanos (misma comuna o por distancia)
+                    colegios_cercanos = con.execute(f"""
+                        SELECT
+                            e.rbd,
+                            e.nombre,
+                            e.nom_comuna,
+                            e.latitud,
+                            e.longitud,
+                            dm.descripcion as dependencia,
+                            COUNT(r.id) as n_estudiantes,
+                            ROUND(AVG(r.lectora_reg), 1) as prom_lectora,
+                            ROUND(AVG(r.mate1_reg), 1) as prom_mate1,
+                            ROUND((AVG(r.lectora_reg) + AVG(r.mate1_reg))/2, 1) as prom_lect_mate
+                        FROM establecimientos e
+                        INNER JOIN resultados_paes r ON e.rbd = r.rbd
+                        LEFT JOIN ref_dependencia_mineduc2 dm ON e.cod_depe2 = dm.codigo
+                        WHERE r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+                        AND e.latitud IS NOT NULL AND e.longitud IS NOT NULL
+                        AND e.rbd != {rbd_seleccionado}
+                        GROUP BY e.rbd, e.nombre, e.nom_comuna, e.latitud, e.longitud, dm.descripcion
+                        HAVING COUNT(r.id) >= 5
+                    """).df()
+
+                    if not colegios_cercanos.empty:
+                        # Calcular distancias
+                        colegios_cercanos['distancia_km'] = colegios_cercanos.apply(
+                            lambda row: calcular_distancia_km(lat_ref, lon_ref, row['latitud'], row['longitud']),
+                            axis=1
+                        )
+
+                        # Filtrar por distancia (máximo 10 km) y ordenar
+                        cercanos = colegios_cercanos[colegios_cercanos['distancia_km'] <= 10].sort_values('distancia_km').head(15)
+
+                        if not cercanos.empty:
+                            st.caption(f"Mostrando {len(cercanos)} establecimientos a menos de 10 km")
+
+                            # Agregar el establecimiento seleccionado para comparación
+                            estab_actual = pd.DataFrame({
+                                'nombre': [estab_info['nombre']],
+                                'nom_comuna': [estab_info['nom_comuna']],
+                                'dependencia': [estab_info['dependencia']],
+                                'n_estudiantes': [len(estudiantes)],
+                                'prom_lectora': [estudiantes['lectora_reg'].mean()],
+                                'prom_mate1': [estudiantes['mate1_reg'].mean()],
+                                'prom_lect_mate': [prom_lm.mean()],
+                                'distancia_km': [0],
+                                'es_seleccionado': [True]
+                            })
+
+                            cercanos['es_seleccionado'] = False
+                            comparacion = pd.concat([estab_actual, cercanos[['nombre', 'nom_comuna', 'dependencia', 'n_estudiantes', 'prom_lectora', 'prom_mate1', 'prom_lect_mate', 'distancia_km', 'es_seleccionado']]], ignore_index=True)
+
+                            # Gráfico de comparación
+                            fig = px.bar(comparacion, x='nombre', y='prom_lect_mate',
+                                         color='dependencia',
+                                         color_discrete_map=COLORES_DEPENDENCIA,
+                                         hover_data=['nom_comuna', 'n_estudiantes', 'distancia_km'],
+                                         labels={'prom_lect_mate': 'Promedio Lect+Mate', 'nombre': ''})
+                            fig.update_layout(xaxis_tickangle=-45, height=500)
+
+                            # Destacar el establecimiento seleccionado
+                            fig.add_annotation(x=estab_info['nombre'], y=prom_lm.mean() + 20,
+                                               text="⭐ Seleccionado", showarrow=False)
+
+                            st.plotly_chart(fig, use_container_width=True)
+
+                            # Tabla de comparación
+                            tabla_comp = comparacion[['nombre', 'dependencia', 'n_estudiantes', 'prom_lectora', 'prom_mate1', 'prom_lect_mate', 'distancia_km']].copy()
+                            tabla_comp.columns = ['Establecimiento', 'Dependencia', 'Estudiantes', 'Prom. Lectora', 'Prom. Mate1', 'Prom. L+M', 'Distancia (km)']
+                            tabla_comp['Distancia (km)'] = tabla_comp['Distancia (km)'].round(1)
+                            st.dataframe(tabla_comp, use_container_width=True, hide_index=True)
+                        else:
+                            st.info("No se encontraron establecimientos con resultados PAES a menos de 10 km")
+                else:
+                    st.warning("Este establecimiento no tiene coordenadas geográficas registradas para buscar colegios cercanos")
+
+                    # Mostrar comparación por comuna si no hay coordenadas
+                    st.subheader("🏘️ Comparación con establecimientos de la misma comuna")
+                    comuna = estab_info['nom_comuna']
+
+                    comp_comuna = con.execute(f"""
+                        SELECT
+                            e.nombre,
+                            dm.descripcion as dependencia,
+                            COUNT(r.id) as n_estudiantes,
+                            ROUND(AVG(r.lectora_reg), 1) as prom_lectora,
+                            ROUND(AVG(r.mate1_reg), 1) as prom_mate1,
+                            ROUND((AVG(r.lectora_reg) + AVG(r.mate1_reg))/2, 1) as prom_lect_mate
+                        FROM establecimientos e
+                        INNER JOIN resultados_paes r ON e.rbd = r.rbd
+                        LEFT JOIN ref_dependencia_mineduc2 dm ON e.cod_depe2 = dm.codigo
+                        WHERE e.nom_comuna = '{comuna}'
+                        AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+                        GROUP BY e.nombre, dm.descripcion
+                        HAVING COUNT(r.id) >= 5
+                        ORDER BY prom_lect_mate DESC
+                    """).df()
+
+                    if not comp_comuna.empty:
+                        st.dataframe(comp_comuna, use_container_width=True, hide_index=True)
+            else:
+                st.warning("No se encontraron datos de estudiantes para este establecimiento")
+
+with tab4:
     st.header("Análisis por Región")
 
     # Datos por región ordenados geográficamente
@@ -443,7 +711,7 @@ with tab3:
     fig.update_layout(height=600)
     st.plotly_chart(fig, use_container_width=True)
 
-with tab4:
+with tab5:
     st.header("Análisis de Brechas Educativas")
 
     st.markdown("""
