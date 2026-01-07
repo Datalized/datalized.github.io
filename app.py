@@ -43,6 +43,15 @@ ORDEN_REGIONES = {
     12: 16,  # Magallanes
 }
 
+# Colores consistentes por dependencia (usados en toda la app)
+COLORES_DEPENDENCIA = {
+    'Particular Pagado': '#E63946',      # Rojo
+    'Particular Subvencionado': '#457B9D',  # Azul
+    'Municipal': '#2A9D8F',              # Verde azulado
+    'Serv. Local Educación': '#E9C46A',  # Amarillo
+    'Corp. Administración Delegada': '#9B5DE5'  # Púrpura
+}
+
 # Título
 st.title("📊 PAES 2026 - Explorador de Datos")
 st.markdown("Análisis de resultados de la Prueba de Acceso a la Educación Superior de Chile")
@@ -106,6 +115,7 @@ with tab1:
         SELECT
             COUNT(*) as total,
             COUNT(lectora_reg) as rindieron_lectora,
+            COUNT(mate1_reg) as rindieron_mate1,
             ROUND(AVG(lectora_reg), 1) as prom_lectora,
             ROUND(AVG(mate1_reg), 1) as prom_mate1,
             ROUND(AVG(puntaje_nem), 1) as prom_nem
@@ -113,12 +123,13 @@ with tab1:
         WHERE {where_sql}
     """).df()
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     col1.metric("Total Postulantes", f"{stats['total'].values[0]:,}")
     col2.metric("Rindieron Lectora", f"{stats['rindieron_lectora'].values[0]:,}")
-    col3.metric("Prom. Lectora", stats['prom_lectora'].values[0])
-    col4.metric("Prom. Matemática 1", stats['prom_mate1'].values[0])
-    col5.metric("Prom. NEM", stats['prom_nem'].values[0])
+    col3.metric("Rindieron Mate 1", f"{stats['rindieron_mate1'].values[0]:,}")
+    col4.metric("Prom. Lectora", stats['prom_lectora'].values[0])
+    col5.metric("Prom. Matemática 1", stats['prom_mate1'].values[0])
+    col6.metric("Prom. NEM", stats['prom_nem'].values[0])
 
     # Gráficos en dos columnas
     col1, col2 = st.columns(2)
@@ -138,9 +149,11 @@ with tab1:
         """).df()
 
         fig = px.bar(dep_data, x='dependencia', y='cantidad',
-                     color='prom_lectora', color_continuous_scale='RdYlGn',
+                     color='dependencia',
+                     color_discrete_map=COLORES_DEPENDENCIA,
+                     hover_data=['prom_lectora'],
                      labels={'cantidad': 'Postulantes', 'prom_lectora': 'Prom. Lectora'})
-        fig.update_layout(xaxis_tickangle=-45)
+        fig.update_layout(xaxis_tickangle=-45, showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -162,29 +175,47 @@ with tab1:
     # Histograma de puntajes
     st.subheader("Distribución de Puntajes PAES Regular")
 
-    prueba_sel = st.selectbox(
-        "Seleccionar Prueba",
-        ["lectora_reg", "mate1_reg", "mate2_reg", "historia_reg", "ciencias_reg"],
-        format_func=lambda x: {
-            "lectora_reg": "Competencia Lectora",
-            "mate1_reg": "Matemática 1",
-            "mate2_reg": "Matemática 2",
-            "historia_reg": "Historia y Cs. Sociales",
-            "ciencias_reg": "Ciencias"
-        }[x]
-    )
+    col_lect, col_mate = st.columns(2)
 
-    hist_data = con.execute(f"""
-        SELECT {prueba_sel} as puntaje
-        FROM resultados_paes r
-        WHERE {where_sql} AND {prueba_sel} IS NOT NULL
-    """).df()
+    with col_lect:
+        st.markdown("**Competencia Lectora**")
+        hist_lectora = con.execute(f"""
+            SELECT
+                d.descripcion as dependencia,
+                r.lectora_reg as puntaje
+            FROM resultados_paes r
+            JOIN ref_dependencia d ON r.dependencia = d.codigo
+            WHERE {where_sql} AND r.lectora_reg IS NOT NULL
+        """).df()
 
-    fig = px.histogram(hist_data, x='puntaje', nbins=50,
-                       labels={'puntaje': 'Puntaje', 'count': 'Frecuencia'})
-    fig.add_vline(x=hist_data['puntaje'].mean(), line_dash="dash",
-                  annotation_text=f"Promedio: {hist_data['puntaje'].mean():.1f}")
-    st.plotly_chart(fig, use_container_width=True)
+        fig = px.histogram(hist_lectora, x='puntaje', color='dependencia', nbins=50,
+                           color_discrete_map=COLORES_DEPENDENCIA,
+                           labels={'puntaje': 'Puntaje', 'count': 'Frecuencia'},
+                           barmode='stack')
+        fig.add_vline(x=hist_lectora['puntaje'].mean(), line_dash="dash",
+                      annotation_text=f"Prom: {hist_lectora['puntaje'].mean():.1f}")
+        fig.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="bottom", y=1.02))
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col_mate:
+        st.markdown("**Matemática 1**")
+        hist_mate = con.execute(f"""
+            SELECT
+                d.descripcion as dependencia,
+                r.mate1_reg as puntaje
+            FROM resultados_paes r
+            JOIN ref_dependencia d ON r.dependencia = d.codigo
+            WHERE {where_sql} AND r.mate1_reg IS NOT NULL
+        """).df()
+
+        fig = px.histogram(hist_mate, x='puntaje', color='dependencia', nbins=50,
+                           color_discrete_map=COLORES_DEPENDENCIA,
+                           labels={'puntaje': 'Puntaje', 'count': 'Frecuencia'},
+                           barmode='stack')
+        fig.add_vline(x=hist_mate['puntaje'].mean(), line_dash="dash",
+                      annotation_text=f"Prom: {hist_mate['puntaje'].mean():.1f}")
+        fig.update_layout(showlegend=True, legend=dict(orientation="h", yanchor="bottom", y=1.02))
+        st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
     st.header("Análisis por Establecimiento")
@@ -198,13 +229,21 @@ with tab2:
         # Top establecimientos (ranking original)
         top_n = st.slider("Cantidad de establecimientos", 10, 50, 20, key="ranking_slider")
 
-        orden = st.radio("Ordenar por", ["Mejor promedio", "Peor promedio", "Más postulantes"], horizontal=True)
+        orden = st.radio("Ordenar por", ["Mejor promedio", "Peor promedio", "Más postulantes", "Más alumnos en top 10%"], horizontal=True)
 
         order_sql = {
             "Mejor promedio": "prom_lect_mate DESC NULLS LAST",
             "Peor promedio": "prom_lect_mate ASC NULLS LAST",
-            "Más postulantes": "cantidad DESC"
+            "Más postulantes": "cantidad DESC",
+            "Más alumnos en top 10%": "en_top10 DESC"
         }[orden]
+
+        # Calcular umbral top 10%
+        p90_threshold = con.execute("""
+            SELECT PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY (lectora_reg + mate1_reg)/2) as p90
+            FROM resultados_paes
+            WHERE lectora_reg IS NOT NULL AND mate1_reg IS NOT NULL
+        """).df()['p90'].values[0]
 
         est_data = con.execute(f"""
             SELECT
@@ -217,6 +256,7 @@ with tab2:
                 ROUND((AVG(r.lectora_reg) + AVG(r.mate1_reg)) / 2, 1) as prom_lect_mate,
                 ROUND(PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as p25,
                 ROUND(PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as p75,
+                SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= {p90_threshold} THEN 1 ELSE 0 END) as en_top10,
                 ROUND(AVG(r.puntaje_nem), 1) as prom_nem
             FROM resultados_paes r
             JOIN establecimientos e ON r.rbd = e.rbd
@@ -229,75 +269,78 @@ with tab2:
             LIMIT {top_n}
         """).df()
 
+        # Agregar columna de ranking
+        est_data.insert(0, 'ranking', range(1, len(est_data) + 1))
+
         st.dataframe(est_data, use_container_width=True, hide_index=True)
 
-        # Gráfico de barras
+        # Gráfico de barras horizontal
         if not est_data.empty:
-            fig = px.bar(est_data.head(20), x='establecimiento', y='prom_lect_mate',
+            chart_data = est_data.head(20).copy()
+            chart_data = chart_data.iloc[::-1]  # Invertir para que el primero quede arriba
+            fig = px.bar(chart_data, y='establecimiento', x='prom_lect_mate',
                          color='dependencia',
-                         hover_data=['prom_lectora', 'prom_mate1', 'p25', 'p75', 'cantidad'],
-                         labels={'prom_lect_mate': 'Promedio Lectora+Mate1'})
-            fig.update_layout(xaxis_tickangle=-45)
+                         color_discrete_map=COLORES_DEPENDENCIA,
+                         hover_data=['prom_lectora', 'prom_mate1', 'p25', 'p75', 'cantidad', 'en_top10'],
+                         labels={'prom_lect_mate': 'Promedio Lectora+Mate1', 'establecimiento': ''},
+                         orientation='h')
+            fig.update_layout(height=600, yaxis={'categoryorder': 'total ascending'})
             st.plotly_chart(fig, use_container_width=True)
 
     with sub_tab2:
         st.subheader("Comparación entre establecimientos similares")
-        st.caption("Compare establecimientos del mismo tipo de dependencia para una evaluación más justa")
-
-        # Selector de dependencia para comparación
-        dep_comparar = st.selectbox(
-            "Seleccionar tipo de dependencia",
-            options=dependencias['codigo'].tolist(),
-            format_func=lambda x: dependencias[dependencias['codigo']==x]['descripcion'].values[0],
-            key="dep_comparar"
-        )
+        st.caption("Compare establecimientos según los filtros seleccionados en el sidebar")
 
         top_n_ctx = st.slider("Cantidad de establecimientos", 10, 50, 20, key="ctx_slider")
 
-        # Calcular promedio de la dependencia seleccionada
-        prom_dep = con.execute(f"""
-            SELECT ROUND(AVG((lectora_reg + mate1_reg)/2), 1) as promedio
-            FROM resultados_paes
-            WHERE dependencia = {dep_comparar}
-            AND lectora_reg IS NOT NULL AND mate1_reg IS NOT NULL
-        """).df()['promedio'].values[0]
+        orden_ctx = st.radio("Ordenar por", ["Mejor promedio", "Peor promedio", "Más postulantes", "Más alumnos en top 10%"], horizontal=True, key="orden_ctx")
 
-        st.metric(f"Promedio nacional de esta dependencia", f"{prom_dep} pts")
+        order_sql_ctx = {
+            "Mejor promedio": "promedio DESC NULLS LAST",
+            "Peor promedio": "promedio ASC NULLS LAST",
+            "Más postulantes": "estudiantes DESC",
+            "Más alumnos en top 10%": "en_top10_nacional DESC"
+        }[orden_ctx]
 
-        # Ranking contextualizado
+        # Ranking contextualizado aplicando filtros del sidebar
         est_ctx = con.execute(f"""
             SELECT
                 e.nombre as establecimiento,
+                d.descripcion as dependencia,
                 c.region,
                 COUNT(*) as estudiantes,
                 ROUND(AVG((r.lectora_reg + r.mate1_reg)/2), 1) as promedio,
-                ROUND(AVG((r.lectora_reg + r.mate1_reg)/2) - {prom_dep}, 1) as diferencia_vs_pares,
                 ROUND(PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as p10,
                 ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as mediana,
                 ROUND(PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as p90,
-                SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= 802 THEN 1 ELSE 0 END) as en_top10_nacional
+                SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= {p90_threshold} THEN 1 ELSE 0 END) as en_top10_nacional
             FROM resultados_paes r
             JOIN establecimientos e ON r.rbd = e.rbd
+            JOIN ref_dependencia d ON r.dependencia = d.codigo
             LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
-            WHERE r.dependencia = {dep_comparar}
-            AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
-            GROUP BY e.nombre, c.region
+            WHERE {where_sql} AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+            GROUP BY e.nombre, d.descripcion, c.region
             HAVING COUNT(*) >= 5
-            ORDER BY promedio DESC
+            ORDER BY {order_sql_ctx}
             LIMIT {top_n_ctx}
         """).df()
 
+        # Agregar columna de ranking
+        est_ctx.insert(0, 'ranking', range(1, len(est_ctx) + 1))
+
         st.dataframe(est_ctx, use_container_width=True, hide_index=True)
 
-        # Gráfico con diferencia vs pares
+        # Gráfico de barras horizontal con color por dependencia
         if not est_ctx.empty:
-            fig = px.bar(est_ctx, x='establecimiento', y='diferencia_vs_pares',
-                         color='diferencia_vs_pares',
-                         color_continuous_scale='RdYlGn',
-                         color_continuous_midpoint=0,
-                         hover_data=['promedio', 'mediana', 'p10', 'p90', 'estudiantes'],
-                         labels={'diferencia_vs_pares': 'Diferencia vs promedio de pares'})
-            fig.update_layout(xaxis_tickangle=-45, title="Diferencia respecto al promedio de su dependencia")
+            chart_ctx = est_ctx.head(20).copy()
+            chart_ctx = chart_ctx.iloc[::-1]  # Invertir para que el primero quede arriba
+            fig = px.bar(chart_ctx, y='establecimiento', x='promedio',
+                         color='dependencia',
+                         color_discrete_map=COLORES_DEPENDENCIA,
+                         hover_data=['mediana', 'p10', 'p90', 'estudiantes', 'en_top10_nacional'],
+                         labels={'promedio': 'Promedio Lectora+Mate1', 'establecimiento': ''},
+                         orientation='h')
+            fig.update_layout(height=600, yaxis={'categoryorder': 'total ascending'})
             st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
@@ -312,8 +355,8 @@ with tab3:
             COUNT(r.lectora_reg) as rindieron,
             ROUND(AVG(r.lectora_reg), 1) as prom_lectora,
             ROUND(AVG(r.mate1_reg), 1) as prom_mate1,
-            ROUND(AVG(r.puntaje_nem), 1) as prom_nem,
-            ROUND(AVG(r.puntaje_ranking), 1) as prom_ranking
+            ROUND((AVG(r.lectora_reg) + AVG(r.mate1_reg))/2, 1) as prom_lect_mate,
+            ROUND(AVG(r.puntaje_nem), 1) as prom_nem
         FROM resultados_paes r
         LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
         WHERE {where_sql}
@@ -323,35 +366,49 @@ with tab3:
 
     # Ordenar geográficamente
     region_data['orden'] = region_data['cod_region'].map(ORDEN_REGIONES)
-    region_data = region_data.sort_values('orden').drop(columns=['orden', 'cod_region'])
+    region_data = region_data.sort_values('orden')
 
-    st.dataframe(region_data, use_container_width=True, hide_index=True)
+    # Selector de región para filtrar comunas
+    region_options = ["Todas las regiones"] + region_data['region'].tolist()
+    selected_region = st.selectbox("Seleccionar región para ver sus comunas", region_options, key="region_selector")
+
+    # Mostrar tabla sin cod_region y orden
+    region_display = region_data.drop(columns=['orden', 'cod_region'])
+    st.dataframe(region_display, use_container_width=True, hide_index=True)
 
     st.divider()
 
-    # Top comunas por promedio Matemática 1
-    st.subheader("Top 20 Comunas por Promedio Matemática 1")
+    # Top comunas por promedio Lectora + Matemática 1
+    st.subheader("Top 20 Comunas por Promedio Lectora + Matemática 1")
+
+    # Construir filtro de región para comunas
+    if selected_region != "Todas las regiones":
+        cod_region_sel = region_data[region_data['region'] == selected_region]['cod_region'].values[0]
+        region_filter = f"AND c.cod_region = {cod_region_sel}"
+    else:
+        region_filter = ""
 
     comuna_data = con.execute(f"""
         SELECT
             c.comuna,
             c.region,
             COUNT(*) as alumnos,
+            ROUND((AVG(r.mate1_reg) + AVG(r.lectora_reg))/2, 1) as prom_lect_mate,
             ROUND(AVG(r.mate1_reg), 1) as prom_mate1,
             ROUND(AVG(r.lectora_reg), 1) as prom_lectora
         FROM resultados_paes r
         LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
-        WHERE {where_sql} AND r.mate1_reg IS NOT NULL
+        WHERE {where_sql} AND r.mate1_reg IS NOT NULL AND r.lectora_reg IS NOT NULL {region_filter}
         GROUP BY c.comuna, c.region
         HAVING COUNT(*) >= 10
-        ORDER BY prom_mate1 DESC
+        ORDER BY prom_lect_mate DESC
         LIMIT 20
     """).df()
 
-    fig = px.bar(comuna_data, x='comuna', y='prom_mate1',
-                 color='prom_mate1', color_continuous_scale='RdYlGn',
-                 hover_data=['region', 'alumnos', 'prom_lectora'],
-                 labels={'prom_mate1': 'Promedio Matemática 1', 'comuna': 'Comuna'})
+    fig = px.bar(comuna_data, x='comuna', y='prom_lect_mate',
+                 color='prom_lect_mate', color_continuous_scale='RdYlGn',
+                 hover_data=['region', 'alumnos', 'prom_lectora', 'prom_mate1'],
+                 labels={'prom_lect_mate': 'Promedio Lectora + Mate1', 'comuna': 'Comuna'})
     fig.update_layout(xaxis_tickangle=-45)
     st.plotly_chart(fig, use_container_width=True)
 
@@ -363,6 +420,7 @@ with tab3:
     est_scatter = con.execute(f"""
         SELECT
             e.nombre as establecimiento,
+            d.descripcion as dependencia,
             c.comuna,
             c.region,
             COUNT(*) as alumnos,
@@ -370,9 +428,10 @@ with tab3:
             ROUND(AVG(r.lectora_reg), 1) as prom_lectora
         FROM resultados_paes r
         JOIN establecimientos e ON r.rbd = e.rbd
+        JOIN ref_dependencia d ON r.dependencia = d.codigo
         LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
-        WHERE {where_sql} AND r.mate1_reg IS NOT NULL AND r.lectora_reg IS NOT NULL
-        GROUP BY e.nombre, c.comuna, c.region
+        WHERE {where_sql} AND r.mate1_reg IS NOT NULL AND r.lectora_reg IS NOT NULL {region_filter}
+        GROUP BY e.nombre, d.descripcion, c.comuna, c.region
         HAVING COUNT(*) >= 5
     """).df()
 
@@ -380,7 +439,7 @@ with tab3:
                      size='alumnos', hover_name='establecimiento',
                      hover_data=['comuna', 'region', 'alumnos'],
                      labels={'prom_lectora': 'Promedio Lectora', 'prom_mate1': 'Promedio Matemática 1'},
-                     color='prom_mate1', color_continuous_scale='RdYlGn')
+                     color='dependencia', color_discrete_map=COLORES_DEPENDENCIA)
     fig.update_layout(height=600)
     st.plotly_chart(fig, use_container_width=True)
 
@@ -441,25 +500,39 @@ with tab4:
         ORDER BY estudiantes DESC
     """).df()
 
-    col1, col2 = st.columns([1, 2])
+    # Tabla resumen
+    st.dataframe(origen_top10, use_container_width=True, hide_index=True)
 
-    with col1:
-        st.dataframe(origen_top10, use_container_width=True, hide_index=True)
+    # Calcular % no particular pagado
+    pct_no_pagado = origen_top10[origen_top10['dependencia'] != 'Particular Pagado']['porcentaje'].sum()
+    st.success(f"**{pct_no_pagado:.1f}%** del Top 10% NO viene de colegios particulares pagados")
 
-        # Calcular % no particular pagado
-        pct_no_pagado = origen_top10[origen_top10['dependencia'] != 'Particular Pagado']['porcentaje'].sum()
-        st.success(f"**{pct_no_pagado:.1f}%** del Top 10% NO viene de colegios particulares pagados")
+    # Obtener datos detallados por establecimiento para visualización de cuadros
+    escuelas_top10 = con.execute(f"""
+        SELECT
+            e.nombre as establecimiento,
+            d.descripcion as dependencia,
+            COUNT(*) as estudiantes_top10
+        FROM resultados_paes r
+        JOIN establecimientos e ON r.rbd = e.rbd
+        JOIN ref_dependencia d ON r.dependencia = d.codigo
+        WHERE (r.lectora_reg + r.mate1_reg)/2 >= {p90}
+        AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+        GROUP BY e.nombre, d.descripcion
+        HAVING COUNT(*) >= 1
+        ORDER BY estudiantes_top10 DESC
+    """).df()
 
-    with col2:
-        # Treemap del origen
-        fig = px.treemap(origen_top10,
-                         path=['dependencia'],
-                         values='estudiantes',
-                         color='porcentaje',
-                         color_continuous_scale='Blues',
-                         title="Distribución del Top 10% por tipo de establecimiento")
-        fig.update_traces(textinfo="label+value+percent root")
-        st.plotly_chart(fig, use_container_width=True)
+    # Treemap con cuadros por establecimiento agrupados por dependencia
+    fig = px.treemap(escuelas_top10,
+                     path=['dependencia', 'establecimiento'],
+                     values='estudiantes_top10',
+                     color='dependencia',
+                     color_discrete_map=COLORES_DEPENDENCIA,
+                     title="Establecimientos con estudiantes en el Top 10% (tamaño = cantidad de estudiantes)")
+    fig.update_traces(textinfo="label+value")
+    fig.update_layout(height=600)
+    st.plotly_chart(fig, use_container_width=True)
 
     st.divider()
 
@@ -480,6 +553,7 @@ with tab4:
 
     fig = px.box(box_data, x='dependencia', y='promedio',
                  color='dependencia',
+                 color_discrete_map=COLORES_DEPENDENCIA,
                  labels={'promedio': 'Promedio Lectora + Matemática 1', 'dependencia': 'Dependencia'},
                  title="Distribución de puntajes por dependencia")
     fig.add_hline(y=p90, line_dash="dash", line_color="green",
@@ -513,49 +587,27 @@ with tab4:
 
     with col1:
         fig = px.bar(prob_data, x='dependencia', y='pct_top10',
-                     color='pct_top10', color_continuous_scale='RdYlGn',
+                     color='dependencia',
+                     color_discrete_map=COLORES_DEPENDENCIA,
+                     text='pct_top10',
                      labels={'pct_top10': '% en Top 10%'},
                      title="% de estudiantes en el Top 10% nacional")
+        fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
         fig.update_layout(xaxis_tickangle=-45, showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         fig = px.bar(prob_data, x='dependencia', y='pct_top20',
-                     color='pct_top20', color_continuous_scale='RdYlGn',
+                     color='dependencia',
+                     color_discrete_map=COLORES_DEPENDENCIA,
+                     text='pct_top20',
                      labels={'pct_top20': '% en Top 20%'},
                      title="% de estudiantes en el Top 20% nacional")
+        fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
         fig.update_layout(xaxis_tickangle=-45, showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
     st.dataframe(prob_data, use_container_width=True, hide_index=True)
-
-    st.divider()
-
-    # Sección 4: Brechas por región
-    st.subheader("🗺️ Brechas por región")
-
-    brechas_region = con.execute(f"""
-        SELECT
-            c.region,
-            ROUND(AVG(CASE WHEN r.dependencia = 1 THEN (r.lectora_reg + r.mate1_reg)/2 END), 1) as prom_pagado,
-            ROUND(AVG(CASE WHEN r.dependencia IN (3, 4) THEN (r.lectora_reg + r.mate1_reg)/2 END), 1) as prom_publico,
-            ROUND(AVG(CASE WHEN r.dependencia = 1 THEN (r.lectora_reg + r.mate1_reg)/2 END) -
-                  AVG(CASE WHEN r.dependencia IN (3, 4) THEN (r.lectora_reg + r.mate1_reg)/2 END), 1) as brecha
-        FROM resultados_paes r
-        LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
-        WHERE r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
-        GROUP BY c.region
-        HAVING prom_pagado IS NOT NULL AND prom_publico IS NOT NULL
-        ORDER BY brecha DESC
-    """).df()
-
-    fig = px.bar(brechas_region, x='region', y='brecha',
-                 color='brecha', color_continuous_scale='RdYlGn_r',
-                 labels={'brecha': 'Brecha (Pagado - Público)', 'region': 'Región'},
-                 title="Brecha de puntajes entre colegios particulares pagados y públicos por región",
-                 hover_data=['prom_pagado', 'prom_publico'])
-    fig.update_layout(xaxis_tickangle=-45)
-    st.plotly_chart(fig, use_container_width=True)
 
 # Footer
 st.divider()
