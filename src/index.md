@@ -14,6 +14,8 @@ const filtros = await FileAttachment("data/filtros.json").json();
 <strong>Nota metodológica</strong>: El DEMRE advierte que la PAES no fue diseñada para medir calidad educativa de establecimientos. Los rankings reflejan principalmente el nivel socioeconómico.
 </div>
 
+<div class="filters">
+
 ```js
 const regionSel = view(Inputs.select(
   [null, ...filtros.regiones],
@@ -32,6 +34,8 @@ const orden = view(Inputs.radio(
 
 const topN = view(Inputs.range([10, 100], {value: 30, step: 10, label: "Mostrar"}));
 ```
+
+</div>
 
 ```js
 // Filtrar y ordenar
