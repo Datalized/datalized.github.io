@@ -46,15 +46,30 @@ result = con.execute(f"""
     ORDER BY prom_lect_mate DESC
 """).fetchall()
 
+# Agregar ranking nacional (ya viene ordenado por prom_lect_mate DESC)
 data = [
     {
         "rbd": r[0], "establecimiento": r[1], "dependencia": r[2],
         "cod_region": r[3], "region": r[4], "comuna": r[5],
         "lat": r[6], "lon": r[7], "cantidad": r[8],
         "prom_lectora": r[9], "prom_mate1": r[10], "prom_lect_mate": r[11],
-        "p25": r[12], "mediana": r[13], "p75": r[14], "en_top10": r[15]
+        "p25": r[12], "mediana": r[13], "p75": r[14], "en_top10": r[15],
+        "rank_nacional": i + 1
     }
-    for r in result
+    for i, r in enumerate(result)
 ]
+
+# Calcular ranking por comuna
+por_comuna = {}
+for e in data:
+    comuna = e["comuna"]
+    if comuna not in por_comuna:
+        por_comuna[comuna] = []
+    por_comuna[comuna].append(e)
+
+for escuelas in por_comuna.values():
+    escuelas.sort(key=lambda x: x["rank_nacional"])
+    for i, e in enumerate(escuelas):
+        e["rank_comuna"] = i + 1
 
 json.dump(data, sys.stdout)

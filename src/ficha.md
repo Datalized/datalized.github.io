@@ -17,22 +17,31 @@ const colores = {
 };
 ```
 
-<div class="search-box">
+<div class="filters">
 
 ```js
-const busqueda = view(Inputs.search(escuelas, {
-  placeholder: "Buscar establecimiento por nombre o comuna...",
-  columns: ["establecimiento", "comuna"],
-  format: d => `${d.establecimiento} - ${d.comuna}`
+// Crear opciones para el datalist
+const opciones = escuelas.map(d => `${d.establecimiento} - ${d.comuna}`);
+
+const busquedaTexto = view(Inputs.text({
+  placeholder: "Escribe el nombre del establecimiento...",
+  datalist: opciones,
+  label: "Buscar establecimiento"
 }));
 ```
 
 </div>
 
 ```js
-if (busqueda.length > 0) {
-  const e = busqueda[0];
-  const rankNacional = escuelas.findIndex(x => x.rbd === e.rbd) + 1;
+// Buscar la escuela que coincide con el texto
+const escuelaSeleccionada = escuelas.find(d =>
+  `${d.establecimiento} - ${d.comuna}` === busquedaTexto
+);
+```
+
+```js
+if (escuelaSeleccionada) {
+  const e = escuelaSeleccionada;
 
   display(html`
     <div class="school-header" style="border-left: 4px solid ${colores[e.dependencia]}">
@@ -50,7 +59,7 @@ if (busqueda.length > 0) {
     <div class="grid grid-cols-4 metrics-grid">
       <div class="card metric-card">
         <h3>Ranking Nacional</h3>
-        <span class="big">#${rankNacional}</span>
+        <span class="big">#${e.rank_nacional}</span>
         <small class="metric-sub">de ${escuelas.length.toLocaleString()}</small>
       </div>
       <div class="card metric-card">
@@ -118,8 +127,10 @@ if (busqueda.length > 0) {
     })));
 
     display(Inputs.table(cercanas, {
-      columns: ["establecimiento", "dependencia", "cantidad", "prom_lect_mate", "en_top10"],
+      columns: ["rank_nacional", "rank_comuna", "establecimiento", "dependencia", "cantidad", "prom_lect_mate", "en_top10"],
       header: {
+        rank_nacional: "# Nac.",
+        rank_comuna: "# Com.",
         establecimiento: "Establecimiento",
         dependencia: "Dependencia",
         cantidad: "Est.",

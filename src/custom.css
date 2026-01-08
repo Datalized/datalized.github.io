@@ -201,32 +201,29 @@ form label {
   line-height: 1.2;
 }
 
+/* Ensure 4 columns on desktop */
+.grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
 /* Responsive grid for cards */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .grid-cols-3,
   .grid-cols-4 {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 480px) {
   .grid-cols-3,
   .grid-cols-4 {
     grid-template-columns: 1fr !important;
   }
 }
 
-/* Search box */
-.search-box {
-  margin-bottom: 1.5rem;
-}
-
-.search-box input[type="search"],
-.search-box input[type="text"] {
-  width: 100%;
-  max-width: 500px;
-  padding: 0.875rem 1.25rem;
-  font-size: 1rem;
+/* Text input in filters - wider */
+.filters input[type="text"] {
+  min-width: 400px;
 }
 
 /* School header card */

@@ -52,12 +52,14 @@ datos = datos.slice(0, topN);
 
 ```js
 Inputs.table(datos, {
-  columns: ["establecimiento", "dependencia", "comuna", "cantidad", "prom_lect_mate", "en_top10"],
+  columns: ["rank_nacional", "rank_comuna", "establecimiento", "dependencia", "comuna", "cantidad", "prom_lect_mate", "en_top10"],
   header: {
+    rank_nacional: "#",
+    rank_comuna: "# Comuna",
     establecimiento: "Establecimiento",
     dependencia: "Dependencia",
     comuna: "Comuna",
-    cantidad: "Estudiantes",
+    cantidad: "Est.",
     prom_lect_mate: "Prom. L+M",
     en_top10: "Top 10%"
   },

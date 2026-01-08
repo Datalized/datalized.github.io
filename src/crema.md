@@ -7,6 +7,7 @@ toc: false
 
 ```js
 const data = await FileAttachment("data/brechas-top10.json").json();
+const escuelasRanking = await FileAttachment("data/escuelas-ranking.json").json();
 
 const colores = {
   'Particular Pagado': '#E63946',
@@ -15,6 +16,16 @@ const colores = {
   'Serv. Local Educación': '#E9C46A',
   'Corp. Administración Delegada': '#9B5DE5'
 };
+
+// Crear mapa de ranking nacional desde datos precalculados
+const rankNacionalMap = new Map(escuelasRanking.map(e => [e.establecimiento, e.rank_nacional]));
+
+// Agregar ranking a escuelas_top10
+const escuelasTop10 = data.escuelas_top10.map((e, i) => ({
+  ...e,
+  rank_top10: i + 1,
+  rank_nacional: rankNacionalMap.get(e.establecimiento) || '-'
+}));
 ```
 
 <div class="grid grid-cols-3">
@@ -106,9 +117,11 @@ resize((width) => Plot.plot({
 ## Escuelas con más estudiantes en el Top 10%
 
 ```js
-Inputs.table(data.escuelas_top10.slice(0, 30), {
-  columns: ["establecimiento", "dependencia", "comuna", "estudiantes_top10", "total_estudiantes"],
+Inputs.table(escuelasTop10.slice(0, 30), {
+  columns: ["rank_top10", "rank_nacional", "establecimiento", "dependencia", "comuna", "estudiantes_top10", "total_estudiantes"],
   header: {
+    rank_top10: "# Top10",
+    rank_nacional: "# Nac.",
     establecimiento: "Establecimiento",
     dependencia: "Dependencia",
     comuna: "Comuna",
@@ -122,11 +135,11 @@ Inputs.table(data.escuelas_top10.slice(0, 30), {
 resize((width) => Plot.plot({
   width,
   marginLeft: Math.min(280, width * 0.4),
-  height: Math.max(400, data.escuelas_top10.slice(0, 20).length * 24),
+  height: Math.max(400, escuelasTop10.slice(0, 20).length * 24),
   style: {fontSize: "11px"},
   y: {label: null},
   marks: [
-    Plot.barX(data.escuelas_top10.slice(0, 20), {
+    Plot.barX(escuelasTop10.slice(0, 20), {
       y: "establecimiento",
       x: "estudiantes_top10",
       fill: d => colores[d.dependencia],
