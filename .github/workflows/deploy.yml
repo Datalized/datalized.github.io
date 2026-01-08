@@ -40,8 +40,6 @@ jobs:
 
       - name: Build site
         run: npm run build
-        env:
-          PATH: .venv/bin:${{ env.PATH }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
