@@ -1,71 +1,154 @@
 ---
-title: PAES 2026 - Ranking
-toc: true
+title: Datalized Public
+toc: false
 ---
 
-# Ranking de Establecimientos
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-```js
-import { initializeTWind } from "./components/tailwind.js";
-const tw = initializeTWind({ invalidation });
+<style>
+:root {
+  --datalized-teal: #31B694;
+  --datalized-teal-light: #52BE9D;
+  --datalized-dark: #111827;
+  --datalized-gray: #374151;
+  --datalized-gray-light: #4B5563;
+  --datalized-bg: #FAF9F5;
+}
 
-const escuelas = await FileAttachment("data/escuelas-ranking.json").json();
-const filtros = await FileAttachment("data/filtros.json").json();
-```
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 1rem;
+  font-family: Raleway, "Raleway Fallback", sans-serif;
+}
 
-<div class="${tw`bg-gradient-to-br from-amber-100 to-amber-50 border-l-4 border-amber-500 py-3 px-4 rounded-r-lg mb-6 text-sm w-full`}">
-<strong>Nota metodológica</strong>: El DEMRE advierte que la PAES no fue diseñada para medir calidad educativa de establecimientos. Los rankings reflejan principalmente el nivel socioeconómico.
+.hero .logo {
+  width: 120px;
+  height: auto;
+  margin-bottom: 1.5rem;
+}
+
+.projects, .site-footer {
+  font-family: Raleway, "Raleway Fallback", sans-serif;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--datalized-teal) 0%, var(--datalized-teal-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 1.25rem;
+  color: var(--datalized-gray);
+  max-width: 600px;
+  margin-bottom: 2rem;
+}
+
+.projects {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.project-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  background: white;
+}
+
+.project-card:hover {
+  border-color: var(--datalized-teal);
+  box-shadow: 0 4px 12px rgba(49, 182, 148, 0.15);
+  transform: translateY(-2px);
+}
+
+.project-card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  color: var(--datalized-dark);
+}
+
+.project-card p {
+  margin: 0;
+  color: var(--datalized-gray-light);
+  font-size: 0.9rem;
+}
+
+.project-card .tag {
+  display: inline-block;
+  background: rgba(49, 182, 148, 0.1);
+  color: var(--datalized-teal);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+.project-card.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.project-card.disabled .tag {
+  background: #f3f4f6;
+  color: var(--datalized-gray-light);
+}
+
+.site-footer {
+  text-align: center;
+  padding: 2rem;
+  color: var(--datalized-gray-light);
+  font-size: 0.85rem;
+}
+
+.site-footer a {
+  color: var(--datalized-teal);
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
+</style>
+
+<div class="hero">
+  <img src="./logo-datalized.png" alt="Datalized" class="logo" />
+  <h1>Datalized Public</h1>
+  <p>Datos públicos de Chile, visualizados y analizados. Exploraciones interactivas de información oficial para entender mejor nuestro país.</p>
 </div>
 
-<div class="${tw`flex flex-wrap gap-x-8 gap-y-6 items-end p-5 bg-slate-100 rounded-xl mb-6`}">
+<div class="projects">
+  <a href="./paes-2026/" class="project-card">
+    <h3>PAES 2026</h3>
+    <p>Resultados de la Prueba de Acceso a la Educación Superior. Rankings de establecimientos, análisis por dependencia y brechas educativas.</p>
+    <span class="tag">306K postulantes</span>
+  </a>
 
-```js
-const regionSel = view(Inputs.select(
-  [null, ...filtros.regiones],
-  {label: "Región", format: d => d ? d.nombre : "Todas"}
-));
-
-const depSel = view(Inputs.select(
-  [null, ...filtros.dependencias],
-  {label: "Dependencia", format: d => d ? d.nombre : "Todas"}
-));
-
-const orden = view(Inputs.radio(
-  ["Mejor promedio", "Más estudiantes", "Más en Top 10%"],
-  {value: "Mejor promedio", label: "Ordenar por"}
-));
-
-const topN = view(Inputs.range([10, 100], {value: 30, step: 10, label: "Mostrar"}));
-```
-
+  <div class="project-card disabled">
+    <h3>Próximamente</h3>
+    <p>Más proyectos de datos públicos en desarrollo.</p>
+    <span class="tag">En desarrollo</span>
+  </div>
 </div>
 
-```js
-// Filtrar y ordenar
-let datos = escuelas
-  .filter(e => !regionSel || e.cod_region === regionSel.codigo)
-  .filter(e => !depSel || e.dependencia === depSel.nombre);
-
-if (orden === "Mejor promedio") datos.sort((a, b) => b.prom_lect_mate - a.prom_lect_mate);
-else if (orden === "Más estudiantes") datos.sort((a, b) => b.cantidad - a.cantidad);
-else datos.sort((a, b) => b.en_top10 - a.en_top10);
-
-datos = datos.slice(0, topN);
-```
-
-```js
-Inputs.table(datos, {
-  columns: ["rank_nacional", "rank_comuna", "establecimiento", "dependencia", "comuna", "cantidad", "prom_lect_mate", "en_top10"],
-  header: {
-    rank_nacional: "#",
-    rank_comuna: "# Comuna",
-    establecimiento: "Establecimiento",
-    dependencia: "Dependencia",
-    comuna: "Comuna",
-    cantidad: "Est.",
-    prom_lect_mate: "Prom. L+M",
-    en_top10: "Top 10%"
-  },
-  sort: false
-})
-```
+<div class="site-footer">
+  <p>Un proyecto de <a href="https://datalized.cl">Datalized</a></p>
+</div>

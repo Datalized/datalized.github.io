@@ -1,13 +1,18 @@
 export default {
     root: "src",
-    title: "PAES 2026",
+    title: "Datalized Public",
     pages: [
-        { name: "Ranking", path: "/" },
-        { name: "El Top 10", path: "/top" },
-        { name: "La Ficha", path: "/ficha" }
+        {
+            name: "PAES 2026",
+            open: true,
+            pages: [
+                { name: "Ranking", path: "/paes-2026/" },
+                { name: "El Top 10", path: "/paes-2026/top" },
+                { name: "La Ficha", path: "/paes-2026/ficha" }
+            ]
+        }
     ],
-    style: "custom.css",
-    base: "/paes2026/",
+    base: "/",
     pager: false,
-    footer: "Fuente: DEMRE · Proceso de Admisión 2026"
+    footer: "Un proyecto de Datalized"
 };

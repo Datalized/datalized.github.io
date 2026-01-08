@@ -32,6 +32,9 @@ Thumbs.db
 # Claude Code
 .claude/
 
+# Raw data (too large for git)
+raw-data/
+
 # Node.js / Observable Framework
 node_modules/
 .observablehq/
