@@ -1,163 +1,87 @@
-# PAES 2026 - Explorador de Datos
+# Datalized Public
 
-Aplicación para explorar y analizar los resultados de la **PAES** (Prueba de Acceso a la Educación Superior) de Chile, proceso de admisión 2026.
+Datos públicos de Chile, visualizados y analizados. Exploraciones interactivas de información oficial para entender mejor nuestro país.
 
-## Descripción
+🌐 **[public.datalized.cl](https://public.datalized.cl)**
 
-Este proyecto contiene:
-- Base de datos DuckDB con resultados PAES 2026
-- Aplicación Streamlit interactiva para explorar los datos
-- Notebooks Jupyter para procesamiento de datos
+## Proyectos
 
-## Contexto: El debate sobre rankings educativos
+### PAES 2026
 
-Esta aplicación incluye un **Análisis de Brechas Educativas** que responde a la discusión pública sobre cómo interpretar los resultados PAES.
+Análisis de resultados de la **PAES** (Prueba de Acceso a la Educación Superior) de Chile, proceso de admisión 2026.
 
-### El problema de los rankings tradicionales
+**Funcionalidades:**
+- **Ranking de Establecimientos**: Ordenar por promedio, cantidad de estudiantes o presencia en Top 10%
+- **El Top 10%**: ¿De dónde vienen los mejores estudiantes? Análisis por dependencia
+- **La Ficha**: Búsqueda individual de establecimientos con comparación comunal
 
-Los rankings de "mejores colegios" basados en promedios PAES son cuestionados por:
-
-- **Sesgo socioeconómico**: ~70% de los resultados se explican por nivel socioeconómico familiar, no por calidad educativa
-- **Invisibilización del talento público**: El 55% de los estudiantes del Top 10% nacional NO viene de colegios particulares pagados
-- **Validez cuestionada**: El DEMRE [advierte oficialmente](https://demre.cl/noticias/2025-01-10-consulta-resultados-por-colegios-actualizada) que la PAES no fue diseñada para medir calidad de establecimientos
-
-### Referencias
-
-- **[@elaval - Análisis PAES 2026](https://elaval.github.io/PAES-2026/)**: Análisis crítico de rankings tradicionales
-- **[CIPER - El ranking del privilegio](https://www.ciperchile.cl/2026/01/06/el-ranking-del-privilegio/)**: Crítica estructural a los rankings
-- **[U. Chile - Valor agregado en educación](https://brunner.cl/2010/08/valor-agregado-por-diferentes-tipos-de-colegios-en-chile/)**: Metodología de valor agregado
-- **[U. Chile - Desigualdad y rankings](https://ingenieria.uchile.cl/noticias/202460/sobre-desigualdad-rankings-y-educacion-publica)**: Perspectiva académica
-
-### Métricas alternativas implementadas
-
-Esta app incluye:
-- **Comparación contextualizada**: Comparar establecimientos solo del mismo tipo de dependencia
-- **Distribución del Top 10%**: ¿De dónde vienen realmente los mejores estudiantes?
-- **Box plots por dependencia**: Distribución completa de puntajes, no solo promedios
-- **Brechas regionales**: Diferencias entre educación pública y privada por región
-
-## Datos
-
+**Datos:**
 | Dataset | Registros | Descripción |
 |---------|-----------|-------------|
 | `resultados_paes` | 306,022 | Puntajes y datos de postulantes |
-| `establecimientos` | ~12,000 | Colegios con ubicación geográfica (lat/lon), matrícula, dependencia |
+| `establecimientos` | ~12,000 | Colegios con ubicación, matrícula, dependencia |
 | `comunas` | 346 | Regiones, provincias y comunas |
-| `cod_ensenanza` | 26 | Códigos MINEDUC de enseñanza |
 
-**Tablas de referencia:** `ref_dependencia` (clasificación PAES), `ref_dependencia_mineduc` (COD_DEPE, 6 categorías), `ref_dependencia_mineduc2` (COD_DEPE2, 5 categorías agrupadas), `ref_rama`, `ref_situacion_egreso`, `ref_modulo_ciencias`, `ref_orientacion_religiosa`, `ref_estado_establecimiento`
+## Contexto: Rankings educativos
 
-### Nueva información de establecimientos (MINEDUC 2025)
+Los rankings de "mejores colegios" basados en promedios PAES son cuestionados:
 
-La tabla `establecimientos` ahora incluye datos del [Directorio Oficial de Establecimientos del MINEDUC](https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/):
+- **Sesgo socioeconómico**: ~70% de los resultados se explican por nivel socioeconómico familiar
+- **Invisibilización del talento público**: El 55% del Top 10% NO viene de particulares pagados
+- **Validez cuestionada**: El DEMRE advierte que la PAES no mide calidad de establecimientos
 
-- **Geolocalización**: Latitud y longitud para búsqueda de colegios cercanos
-- **Matrícula**: Por nivel educativo (parvulario, básica, media HC/TP)
-- **Dependencia detallada**: COD_DEPE (6 categorías) y COD_DEPE2 (5 categorías agrupadas)
-- **Programas**: Convenio PIE, Programa PACE
-- **Características**: Ruralidad, orientación religiosa, costos (matrícula y mensualidad)
+### Referencias
 
-## Instalación
+- [@elaval - Análisis PAES 2026](https://elaval.github.io/PAES-2026/)
+- [CIPER - El ranking del privilegio](https://www.ciperchile.cl/2026/01/06/el-ranking-del-privilegio/)
+- [U. Chile - Desigualdad y rankings](https://ingenieria.uchile.cl/noticias/202460/sobre-desigualdad-rankings-y-educacion-publica)
+
+## Tecnología
+
+- [Observable Framework](https://observablehq.com/framework/) - Sitio estático con data loaders
+- [DuckDB](https://duckdb.org/) - Base de datos analítica
+- [Observable Plot](https://observablehq.com/plot/) - Visualizaciones
+
+## Desarrollo
 
 ```bash
-# Clonar repositorio
-git clone https://github.com/rarce/paes2026.git
-cd paes2026
-
-# Instalar dependencias (requiere uv)
+# Instalar dependencias
+npm install
 uv sync
 
-# Generar base de datos
-cd notebooks
-uv run jupyter execute paes_db.ipynb
-cd ..
+# Desarrollo (localhost:3000)
+npm run dev
 
-# Ejecutar aplicación
-uv run streamlit run app.py
+# Build para producción
+npm run build
+
+# Regenerar base de datos
+uv run jupyter execute notebooks/paes-2026/raw-data.ipynb
 ```
 
-## Uso
-
-### Aplicación Web
-
-```bash
-uv run streamlit run app.py
-```
-
-Abre http://localhost:8501 en tu navegador.
-
-**Funcionalidades:**
-- Resumen general con métricas y gráficos
-- Análisis por establecimiento (ranking general + comparación contextualizada)
-- **Buscar Establecimiento**: Búsqueda individual de colegios con:
-  - Scatter plot de resultados individuales (Matemática vs Lectora)
-  - Datos agregados del establecimiento
-  - Colegios cercanos basados en geolocalización
-- Análisis por región
-- **Análisis de brechas educativas**: distribución del talento, box plots por dependencia, origen del Top 10%
-
-### Jupyter Notebook
-
-```bash
-uv run jupyter notebook notebooks/paes_db.ipynb
-```
-
-## Estructura del Proyecto
+## Estructura
 
 ```
-paes2026/
-├── app.py                  # Aplicación Streamlit
-├── paes.duckdb             # Base de datos DuckDB
-├── pyproject.toml          # Dependencias del proyecto
-├── requirements.txt        # Dependencias para Streamlit Cloud
-├── CLAUDE.md               # Instrucciones para Claude Code
-├── LICENSE                 # Licencia MIT
-├── data/
-│   ├── ArchivoC_Adm2026REG.csv                          # Resultados PAES (DEMRE)
-│   ├── Libro_CódigosADM2026_ArchivoC.xlsx               # Libro de códigos (DEMRE)
-│   ├── 20250926_Directorio_Oficial_EE_2025_20250430_WEB.csv  # Directorio establecimientos (MINEDUC)
-│   └── ER_Directorio_Oficial_EE_WEB.pdf                 # Esquema del directorio
-├── docs/
-│   └── paes.md             # Documentación sobre la PAES
-└── notebooks/
-    └── paes_db.ipynb       # Notebook para crear la BD
+├── src/
+│   ├── index.md              # Landing page
+│   └── paes-2026/            # Proyecto PAES
+│       ├── index.md          # Ranking
+│       ├── top.md            # Top 10%
+│       ├── ficha.md          # Búsqueda
+│       └── data/             # Data loaders (Python)
+├── notebooks/
+│   └── paes-2026/
+│       └── raw-data.ipynb    # Genera paes.duckdb
+├── raw-data/                 # Datos fuente (no en git)
+└── paes.duckdb               # Base de datos compilada
 ```
-
-## Esquema de Base de Datos
-
-### Tabla Principal: `resultados_paes`
-
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `id` | VARCHAR | Identificador único del postulante |
-| `rbd` | INTEGER | RBD del establecimiento |
-| `dependencia` | INTEGER | 1=Part.Pagado, 2=Part.Subv, 3=Municipal, 4=SLE |
-| `rama` | VARCHAR | H1-H4 (humanista), T1-T5 (técnico) |
-| `puntaje_nem` | INTEGER | Puntaje NEM (100-1000) |
-| `puntaje_ranking` | INTEGER | Puntaje Ranking (100-1000) |
-| `lectora_reg` | INTEGER | Competencia Lectora Regular |
-| `mate1_reg` | INTEGER | Matemática 1 Regular |
-| `mate2_reg` | INTEGER | Matemática 2 Regular |
-| `historia_reg` | INTEGER | Historia y Cs. Sociales Regular |
-| `ciencias_reg` | INTEGER | Ciencias Regular |
-
-Ver [docs/paes.md](docs/paes.md) para más detalles sobre la PAES.
 
 ## Fuentes de Datos
 
 | Fuente | URL | Descripción |
 |--------|-----|-------------|
 | DEMRE | [portal-transparencia.demre.cl](https://portal-transparencia.demre.cl/portal-base-datos) | Resultados PAES 2026 |
-| MINEDUC | [datosabiertos.mineduc.cl](https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/) | Directorio Oficial de Establecimientos 2025 |
-| DEMRE | Libro de Códigos ADM2026 | Códigos y comunas |
-
-## Tecnologías
-
-- [DuckDB](https://duckdb.org/) - Base de datos analítica
-- [Streamlit](https://streamlit.io/) - Framework de aplicaciones web
-- [streamlit-searchbox](https://github.com/m-wrzr/streamlit-searchbox) - Componente de búsqueda con autocompletado
-- [Plotly](https://plotly.com/) - Visualizaciones interactivas
-- [uv](https://docs.astral.sh/uv/) - Gestor de paquetes Python
+| MINEDUC | [datosabiertos.mineduc.cl](https://datosabiertos.mineduc.cl/directorio-de-establecimientos-educacionales/) | Directorio de Establecimientos |
 
 ## Licencia
 
@@ -165,4 +89,4 @@ MIT
 
 ---
 
-Hecho con ❤️ por [Datalized](https://datalized.cl/)
+Hecho con datos por [Datalized](https://datalized.cl/)
