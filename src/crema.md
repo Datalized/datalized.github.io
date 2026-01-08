@@ -45,52 +45,62 @@ const pctNoPagado = data.origen_top10
 </div>
 
 ```js
-Plot.plot({
-  marginLeft: 200,
-  height: 250,
+resize((width) => Plot.plot({
+  width,
+  marginLeft: Math.min(200, width * 0.35),
+  height: 220,
+  style: {fontSize: "12px"},
+  y: {label: null},
   marks: [
     Plot.barX(data.origen_top10, {
       y: "dependencia",
       x: "estudiantes",
       fill: d => colores[d.dependencia],
-      sort: {y: "-x"}
+      sort: {y: "-x"},
+      tip: true
     }),
     Plot.text(data.origen_top10, {
       y: "dependencia",
       x: "estudiantes",
       text: d => `${d.porcentaje}%`,
       dx: 5,
-      textAnchor: "start"
+      textAnchor: "start",
+      fontSize: 11
     }),
     Plot.ruleX([0])
   ]
-})
+}))
 ```
 
 ## Probabilidad de estar en el Top 10% según Dependencia
 
 ```js
-Plot.plot({
-  marginLeft: 200,
-  height: 250,
+resize((width) => Plot.plot({
+  width,
+  marginLeft: Math.min(200, width * 0.35),
+  height: 220,
+  style: {fontSize: "12px"},
+  y: {label: null},
   marks: [
     Plot.barX(data.prob_top10, {
       y: "dependencia",
       x: "pct_top10",
       fill: d => colores[d.dependencia],
-      sort: {y: "-x"}
+      sort: {y: "-x"},
+      tip: true
     }),
     Plot.text(data.prob_top10, {
       y: "dependencia",
       x: "pct_top10",
       text: d => `${d.pct_top10}%`,
       dx: 5,
-      textAnchor: "start"
+      textAnchor: "start",
+      fontSize: 11
     }),
     Plot.ruleX([0])
   ],
-  x: {label: "% de estudiantes en Top 10%"}
-})
+  x: {label: "% en Top 10%"}
+}))
 ```
 
 ## Escuelas con más estudiantes en el Top 10%
@@ -109,17 +119,22 @@ Inputs.table(data.escuelas_top10.slice(0, 30), {
 ```
 
 ```js
-Plot.plot({
-  height: 500,
-  marginLeft: 280,
+resize((width) => Plot.plot({
+  width,
+  marginLeft: Math.min(280, width * 0.4),
+  height: Math.max(400, data.escuelas_top10.slice(0, 20).length * 24),
+  style: {fontSize: "11px"},
+  y: {label: null},
   marks: [
-    Plot.barX(data.escuelas_top10.slice(0, 25), {
+    Plot.barX(data.escuelas_top10.slice(0, 20), {
       y: "establecimiento",
       x: "estudiantes_top10",
       fill: d => colores[d.dependencia],
-      sort: {y: "-x"}
+      sort: {y: "-x"},
+      tip: true
     }),
     Plot.ruleX([0])
-  ]
-})
+  ],
+  x: {label: "Estudiantes en Top 10%"}
+}))
 ```
