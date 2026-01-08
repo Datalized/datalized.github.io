@@ -8,14 +8,6 @@ toc: false
 ```js
 const escuelas = await FileAttachment("data/escuelas-ranking.json").json();
 const filtros = await FileAttachment("data/filtros.json").json();
-
-const colores = {
-  'Particular Pagado': '#E63946',
-  'Particular Subvencionado': '#457B9D',
-  'Municipal': '#2A9D8F',
-  'Serv. Local Educación': '#E9C46A',
-  'Corp. Administración Delegada': '#9B5DE5'
-};
 ```
 
 <div class="note">
@@ -66,21 +58,5 @@ Inputs.table(datos, {
     en_top10: "Top 10%"
   },
   sort: false
-})
-```
-
-```js
-Plot.plot({
-  marginLeft: 280,
-  height: Math.max(400, datos.length * 22),
-  marks: [
-    Plot.barX(datos, {
-      y: "establecimiento",
-      x: "prom_lect_mate",
-      fill: d => colores[d.dependencia],
-      sort: {y: "-x"}
-    }),
-    Plot.ruleX([0])
-  ]
 })
 ```
