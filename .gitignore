@@ -38,4 +38,3 @@ raw-data/
 # Node.js / Observable Framework
 node_modules/
 .observablehq/
-package-lock.json
