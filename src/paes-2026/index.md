@@ -90,6 +90,15 @@ Inputs.table(datos, {
     prom_lect_mate: "Prom. L+M",
     en_top10: "Top 10%"
   },
-  sort: false
+  width: {
+    rank_nacional: 10,
+    rank_comuna: 10,
+    cantidad: 30,
+    prom_lect_mate: 80,
+    en_top10: 80,
+    dependencia: 120,
+    comuna: 100
+  },
+  sort: false 
 })
 ```

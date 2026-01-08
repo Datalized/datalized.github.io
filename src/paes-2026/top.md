@@ -149,14 +149,23 @@ resize((width) => Plot.plot({
 Inputs.table(escuelasTop10.slice(0, 30), {
   columns: ["rank_top10", "rank_nacional", "establecimiento", "dependencia", "comuna", "estudiantes_top10", "total_estudiantes"],
   header: {
-    rank_top10: "# Top10",
-    rank_nacional: "# Nac.",
+    rank_top10: "#Top10",
+    rank_nacional: "#",
     establecimiento: "Establecimiento",
     dependencia: "Dependencia",
     comuna: "Comuna",
-    estudiantes_top10: "En Top 10%",
+    estudiantes_top10: "Est. 10%",
     total_estudiantes: "Total Est."
-  }
+  },
+    width: {
+    rank_top10: 50,
+    rank_nacional: 20,
+    estudiantes_top10: 80,
+    total_estudiantes: 80,
+    en_top10: 80,
+    dependencia: 120,
+    comuna: 100
+  },
 })
 ```
 
