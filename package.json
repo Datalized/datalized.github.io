@@ -1,0 +1,14 @@
+{
+  "name": "paes2026",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "observable preview",
+    "build": "observable build",
+    "clean": "rm -rf dist .observablehq/cache"
+  },
+  "dependencies": {
+    "@observablehq/framework": "^1.12.0"
+  },
+  "devDependencies": {}
+}
