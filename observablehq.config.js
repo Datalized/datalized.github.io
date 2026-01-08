@@ -6,6 +6,8 @@ export default {
     {name: "La Crema", path: "/crema"},
     {name: "La Ficha", path: "/ficha"}
   ],
-  theme: "light",
-  base: "/paes2026/"
+  theme: ["air", "wide"],
+  base: "/paes2026/",
+  pager: false,
+  footer: "Fuente: DEMRE · Proceso de Admisión 2026"
 };
