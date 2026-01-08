@@ -1,6 +1,10 @@
 export default {
     root: "src",
     title: "Datalized Public",
+    theme: ["light", "wide"],
+    head: `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">`,
     pages: [
         {
             name: "PAES 2026",
@@ -14,5 +18,6 @@ export default {
     ],
     base: "/",
     pager: false,
+    search: true,
     footer: "Un proyecto de Datalized"
 };

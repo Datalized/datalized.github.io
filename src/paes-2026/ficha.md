@@ -1,83 +1,13 @@
 ---
 title: La Ficha - Buscar Establecimiento
 toc: false
+style: styles.css
 ---
-
-<style>
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem 2rem;
-  align-items: end;
-  padding: 1.25rem;
-  background: #f1f5f9;
-  border-radius: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-top: 1rem;
-}
-.stat-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  text-align: center;
-}
-.stat-card h3 {
-  font-size: 0.65rem;
-  font-weight: 500;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 0.5rem 0;
-}
-.stat-card .value {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #1e293b;
-  display: block;
-}
-.stat-card .value.highlight {
-  color: #3b82f6;
-}
-.stat-card small {
-  display: block;
-  font-size: 0.75rem;
-  color: #94a3b8;
-  margin-top: 0.25rem;
-}
-.school-header {
-  padding: 1rem;
-  background: #f8fafc;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-}
-.school-header h2 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.25rem;
-}
-.school-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  font-size: 0.875rem;
-  color: #64748b;
-}
-.section-title {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-}
-</style>
 
 # La Ficha: Buscar Establecimiento
 
 ```js
-const escuelas = await FileAttachment("data/escuelas-ranking.json").json();
+const escuelas = FileAttachment("data/escuelas-ranking.json").json();
 
 const colores = {
   'Particular Pagado': '#E63946',

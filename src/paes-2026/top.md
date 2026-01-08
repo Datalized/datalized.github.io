@@ -1,42 +1,14 @@
 ---
 title: El Top 10 - Top 10%
 toc: false
+style: styles.css
 ---
-
-<style>
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-.stat-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-.stat-card h2 {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 0.5rem 0;
-}
-.stat-card .value {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #1e293b;
-  line-height: 1.2;
-}
-</style>
 
 # El Top 10: ¿De dónde viene el Top 10%?
 
 ```js
-const data = await FileAttachment("data/brechas-top10.json").json();
-const escuelasRanking = await FileAttachment("data/escuelas-ranking.json").json();
+const data = FileAttachment("data/brechas-top10.json").json();
+const escuelasRanking = FileAttachment("data/escuelas-ranking.json").json();
 
 const colores = {
   'Particular Pagado': '#E63946',
@@ -45,7 +17,9 @@ const colores = {
   'Serv. Local Educación': '#E9C46A',
   'Corp. Administración Delegada': '#9B5DE5'
 };
+```
 
+```js
 // Crear mapa de ranking nacional desde datos precalculados
 const rankNacionalMap = new Map(escuelasRanking.map(e => [e.establecimiento, e.rank_nacional]));
 

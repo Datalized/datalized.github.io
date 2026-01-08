@@ -1,38 +1,18 @@
 ---
 title: PAES 2026 - Ranking
 toc: true
+style: styles.css
 ---
-
-<style>
-.note-box {
-  background: linear-gradient(to bottom right, #fef3c7, #fefce8);
-  border-left: 4px solid #f59e0b;
-  padding: 0.75rem 1rem;
-  border-radius: 0 0.5rem 0.5rem 0;
-  margin-bottom: 1.5rem;
-  font-size: 0.875rem;
-}
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem 2rem;
-  align-items: end;
-  padding: 1.25rem;
-  background: #f1f5f9;
-  border-radius: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-</style>
 
 # Ranking de Establecimientos
 
 ```js
-const escuelas = await FileAttachment("data/escuelas-ranking.json").json();
-const filtros = await FileAttachment("data/filtros.json").json();
+const escuelas = FileAttachment("data/escuelas-ranking.json").json();
+const filtros = FileAttachment("data/filtros.json").json();
 ```
 
-<div class="note-box">
-<strong>Nota metodológica</strong>: El DEMRE advierte que la PAES no fue diseñada para medir calidad educativa de establecimientos. Los rankings reflejan principalmente el nivel socioeconómico.
+<div class="warning" label="Nota metodológica">
+El DEMRE advierte que la PAES no fue diseñada para medir calidad educativa de establecimientos. Los rankings reflejan principalmente el nivel socioeconómico.
 </div>
 
 <div class="filters">
@@ -99,6 +79,7 @@ Inputs.table(datos, {
     dependencia: 120,
     comuna: 100
   },
+  height: 'auto',
   sort: false 
 })
 ```
