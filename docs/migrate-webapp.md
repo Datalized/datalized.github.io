@@ -7,30 +7,22 @@ Este documento describe cómo migrar la aplicación PAES 2026 Explorer de Stream
 | Aspecto | Actual (Streamlit) | Propuesto (Observable Framework) |
 |---------|-------------------|----------------------------------|
 | Backend | Python + Streamlit Cloud | Sin backend (100% estático) |
-| Base de datos | DuckDB (34 MB) en servidor | Datos precomputados en JSON/Parquet |
-| Procesamiento | Queries en cada request | Todo precomputado en build time |
+| Base de datos | DuckDB (34 MB) en servidor | Datos precomputados en JSON |
+| Secciones | 5 tabs | 3 páginas enfocadas |
 | Hosting | Streamlit Community Cloud | GitHub Pages (gratis, ilimitado) |
-| Tamaño final | 34 MB + app | ~3-5 MB total |
+| Tamaño final | 34 MB + app | ~500 KB total |
 
-## ¿Por qué migrar?
+## Secciones Post-Migración
 
-### Ventajas de Observable Framework
-
-1. **Carga instantánea**: Datos precomputados = sin esperas
-2. **Sin servidor**: GitHub Pages es gratis e ilimitado
-3. **Escalabilidad infinita**: CDN global, sin límites de concurrencia
-4. **Mantenimiento cero**: Sin base de datos que mantener en producción
-5. **SEO friendly**: HTML estático indexable
-
-### Limitaciones actuales de Streamlit
-
-- Límites de memoria y conexiones en Streamlit Cloud
-- Latencia en cada interacción (round-trip al servidor)
-- Base de datos debe estar disponible en runtime
+| Sección | Descripción | Datos necesarios |
+|---------|-------------|------------------|
+| **Ranking** | Rankings de establecimientos con filtros | escuelas-ranking.json |
+| **La Crema** | Análisis del Top 10% nacional | brechas-top10.json |
+| **La Ficha** | Búsqueda y ficha de establecimiento | escuelas-ranking.json |
 
 ---
 
-## Arquitectura Propuesta
+## Arquitectura
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -41,11 +33,10 @@ Este documento describe cómo migrar la aplicación PAES 2026 Explorer de Stream
 │                          │                                       │
 │                          ▼                                       │
 │              ┌──────────────────────┐                           │
-│              │  Archivos estáticos  │                           │
-│              │  - resumen.json      │                           │
+│              │  Archivos JSON       │                           │
 │              │  - escuelas.json     │                           │
-│              │  - histograma.json   │                           │
-│              │  - regiones.json     │                           │
+│              │  - brechas.json      │                           │
+│              │  - filtros.json      │                           │
 │              └──────────────────────┘                           │
 │                          │                                       │
 │                          ▼                                       │
@@ -64,233 +55,40 @@ Este documento describe cómo migrar la aplicación PAES 2026 Explorer de Stream
 │   Usuario ──► GitHub Pages ──► HTML/JS/JSON                     │
 │                                     │                            │
 │                                     ▼                            │
-│                           ┌─────────────────┐                   │
-│                           │  JavaScript     │                   │
-│                           │  (filtros,      │                   │
-│                           │   ordenamiento) │                   │
-│                           └─────────────────┘                   │
-│                                     │                            │
-│                                     ▼                            │
-│                           ┌─────────────────┐                   │
-│                           │ Observable Plot │                   │
-│                           │ Visualizaciones │                   │
-│                           └─────────────────┘                   │
+│                           JavaScript + Observable Plot           │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Punto clave**: DuckDB solo se usa en **build time** para generar los datos. En el navegador solo hay JavaScript puro y Observable Plot.
-
 ---
 
-## Tecnologías
-
-### 1. Observable Framework
-
-[Observable Framework](https://observablehq.com/framework/) es un generador de sitios estáticos para aplicaciones de datos.
-
-**Características:**
-- Data loaders que ejecutan en build time (Python, R, Shell, etc.)
-- Markdown reactivo con bloques de código JavaScript
-- Observable Plot integrado para visualizaciones
-- Deploy directo a GitHub Pages
-
-**Instalación:**
-```bash
-# Crear proyecto
-npx @observablehq/framework create paes-explorer
-cd paes-explorer
-
-# Estructura
-paes-explorer/
-├── src/
-│   ├── index.md              # Página principal
-│   ├── data/
-│   │   └── resumen.json.py   # Data loader (genera JSON)
-│   └── components/
-├── observablehq.config.js
-└── package.json
-```
-
-### 2. Data Loaders (Build Time con DuckDB)
-
-Los data loaders son scripts que generan archivos estáticos durante el build. Pueden usar cualquier lenguaje.
-
-**Ventajas:**
-- Precomputan todas las agregaciones pesadas
-- El usuario recibe datos listos para mostrar
-- La base de datos nunca se expone al público
-- Cache automático entre builds
-
-**Convención de nombres:**
-```
-resumen.json.py    → genera → resumen.json
-escuelas.csv.py    → genera → escuelas.csv
-histograma.json.sh → genera → histograma.json
-```
-
-### 3. Observable Plot (Visualizaciones)
-
-[Observable Plot](https://observablehq.com/plot/) es una librería de visualización declarativa incluida en Framework.
-
-```javascript
-Plot.plot({
-  marks: [
-    Plot.barY(data, {x: "categoria", y: "valor", fill: "grupo"})
-  ]
-})
-```
-
----
-
-## Plan de Migración
-
-### Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 paes-explorer/
 ├── src/
-│   ├── index.md                    # Resumen
-│   ├── establecimientos.md         # Rankings
-│   ├── buscar.md                   # Buscar escuela
-│   ├── regiones.md                 # Análisis regional
-│   ├── brechas.md                  # Análisis de brechas
+│   ├── index.md                    # Ranking (página principal)
+│   ├── crema.md                    # La Crema (Top 10%)
+│   ├── ficha.md                    # La Ficha (búsqueda)
 │   ├── data/
-│   │   ├── resumen.json.py
-│   │   ├── dependencias.json.py
 │   │   ├── escuelas-ranking.json.py
-│   │   ├── histograma-lectora.json.py
-│   │   ├── histograma-mate.json.py
-│   │   ├── regiones.json.py
-│   │   ├── comunas-top.json.py
 │   │   ├── brechas-top10.json.py
-│   │   └── filtros.json.py         # Opciones para selectores
+│   │   └── filtros.json.py
 │   └── components/
-│       └── colors.js               # Paleta de colores
+│       └── colors.js
 ├── paes.duckdb                     # Solo para build
 ├── observablehq.config.js
 └── package.json
 ```
 
-### Data Loaders
+---
 
-#### `src/data/resumen.json.py`
-```python
-#!/usr/bin/env python3
-"""Estadísticas generales para la página de resumen."""
-import duckdb
-import json
-import sys
+## Data Loaders
 
-con = duckdb.connect("paes.duckdb", read_only=True)
+### `src/data/escuelas-ranking.json.py`
 
-# Filtros oficiales (mismos que app.py)
-WHERE_OFICIAL = """
-    r.puntaje_nem > 0
-    AND r.puntaje_ranking > 0
-    AND r.mate1_reg > 0
-    AND r.lectora_reg > 0
-    AND r.rindio_anterior = false
-    AND r.situacion_egreso = 1
-"""
+Usado por **Ranking** y **La Ficha**.
 
-# Totales generales
-totales = con.execute(f"""
-    SELECT
-        COUNT(*) as total,
-        COUNT(lectora_reg) as rindieron_lectora,
-        COUNT(mate1_reg) as rindieron_mate1,
-        ROUND(AVG(lectora_reg), 1) as prom_lectora,
-        ROUND(AVG(mate1_reg), 1) as prom_mate1,
-        ROUND(AVG(puntaje_nem), 1) as prom_nem
-    FROM resultados_paes r
-    WHERE {WHERE_OFICIAL}
-""").fetchone()
-
-# Por dependencia
-por_dependencia = con.execute(f"""
-    SELECT
-        d.descripcion as dependencia,
-        COUNT(*) as cantidad,
-        ROUND(AVG(r.lectora_reg), 1) as prom_lectora,
-        ROUND(AVG(r.mate1_reg), 1) as prom_mate1
-    FROM resultados_paes r
-    JOIN ref_dependencia d ON r.dependencia = d.codigo
-    WHERE {WHERE_OFICIAL}
-    GROUP BY d.descripcion
-    ORDER BY cantidad DESC
-""").fetchall()
-
-# Por rama
-por_rama = con.execute(f"""
-    SELECT
-        rm.descripcion as rama,
-        COUNT(*) as cantidad
-    FROM resultados_paes r
-    JOIN ref_rama rm ON r.rama = rm.codigo
-    WHERE {WHERE_OFICIAL}
-    GROUP BY rm.descripcion
-    ORDER BY cantidad DESC
-""").fetchall()
-
-result = {
-    "totales": {
-        "total": totales[0],
-        "rindieron_lectora": totales[1],
-        "rindieron_mate1": totales[2],
-        "prom_lectora": totales[3],
-        "prom_mate1": totales[4],
-        "prom_nem": totales[5]
-    },
-    "por_dependencia": [
-        {"dependencia": r[0], "cantidad": r[1], "prom_lectora": r[2], "prom_mate1": r[3]}
-        for r in por_dependencia
-    ],
-    "por_rama": [
-        {"rama": r[0], "cantidad": r[1]}
-        for r in por_rama
-    ]
-}
-
-json.dump(result, sys.stdout)
-```
-
-#### `src/data/histograma-lectora.json.py`
-```python
-#!/usr/bin/env python3
-"""Datos pre-binneados para histograma de Lectora."""
-import duckdb
-import json
-import sys
-
-con = duckdb.connect("paes.duckdb", read_only=True)
-
-WHERE_OFICIAL = """
-    r.puntaje_nem > 0 AND r.rindio_anterior = false AND r.situacion_egreso = 1
-"""
-
-# Pre-calcular bins del histograma (evita enviar 200k+ puntos)
-result = con.execute(f"""
-    SELECT
-        d.descripcion as dependencia,
-        FLOOR(r.lectora_reg / 20) * 20 as bin_start,
-        COUNT(*) as count
-    FROM resultados_paes r
-    JOIN ref_dependencia d ON r.dependencia = d.codigo
-    WHERE {WHERE_OFICIAL} AND r.lectora_reg IS NOT NULL
-    GROUP BY d.descripcion, FLOOR(r.lectora_reg / 20) * 20
-    ORDER BY bin_start
-""").fetchall()
-
-data = [
-    {"dependencia": r[0], "bin": r[1], "count": r[2]}
-    for r in result
-]
-
-json.dump(data, sys.stdout)
-```
-
-#### `src/data/escuelas-ranking.json.py`
 ```python
 #!/usr/bin/env python3
 """Ranking de escuelas con métricas completas."""
@@ -301,8 +99,9 @@ import sys
 con = duckdb.connect("paes.duckdb", read_only=True)
 
 WHERE_OFICIAL = """
-    r.puntaje_nem > 0 AND r.rindio_anterior = false AND r.situacion_egreso = 1
-    AND r.lectora_reg IS NOT NULL AND r.mate1_reg IS NOT NULL
+    r.puntaje_nem > 0 AND r.puntaje_ranking > 0
+    AND r.mate1_reg > 0 AND r.lectora_reg > 0
+    AND r.rindio_anterior = false AND r.situacion_egreso = 1
 """
 
 # Calcular umbral top 10%
@@ -319,11 +118,14 @@ result = con.execute(f"""
         c.cod_region,
         c.region,
         c.comuna,
+        e.latitud,
+        e.longitud,
         COUNT(*) as cantidad,
         ROUND(AVG(r.lectora_reg), 1) as prom_lectora,
         ROUND(AVG(r.mate1_reg), 1) as prom_mate1,
         ROUND((AVG(r.lectora_reg) + AVG(r.mate1_reg)) / 2, 1) as prom_lect_mate,
         ROUND(PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as p25,
+        ROUND(PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as mediana,
         ROUND(PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY (r.lectora_reg + r.mate1_reg)/2), 0) as p75,
         SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= {p90} THEN 1 ELSE 0 END) as en_top10
     FROM resultados_paes r
@@ -331,7 +133,7 @@ result = con.execute(f"""
     JOIN ref_dependencia d ON r.dependencia = d.codigo
     LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
     WHERE {WHERE_OFICIAL}
-    GROUP BY e.rbd, e.nombre, d.descripcion, c.cod_region, c.region, c.comuna
+    GROUP BY e.rbd, e.nombre, d.descripcion, c.cod_region, c.region, c.comuna, e.latitud, e.longitud
     HAVING COUNT(*) >= 5
     ORDER BY prom_lect_mate DESC
 """).fetchall()
@@ -340,8 +142,9 @@ data = [
     {
         "rbd": r[0], "establecimiento": r[1], "dependencia": r[2],
         "cod_region": r[3], "region": r[4], "comuna": r[5],
-        "cantidad": r[6], "prom_lectora": r[7], "prom_mate1": r[8],
-        "prom_lect_mate": r[9], "p25": r[10], "p75": r[11], "en_top10": r[12]
+        "lat": r[6], "lon": r[7], "cantidad": r[8],
+        "prom_lectora": r[9], "prom_mate1": r[10], "prom_lect_mate": r[11],
+        "p25": r[12], "mediana": r[13], "p75": r[14], "en_top10": r[15]
     }
     for r in result
 ]
@@ -349,7 +152,112 @@ data = [
 json.dump(data, sys.stdout)
 ```
 
-#### `src/data/filtros.json.py`
+### `src/data/brechas-top10.json.py`
+
+Usado por **La Crema**.
+
+```python
+#!/usr/bin/env python3
+"""Datos para análisis del Top 10% nacional."""
+import duckdb
+import json
+import sys
+
+con = duckdb.connect("paes.duckdb", read_only=True)
+
+WHERE_OFICIAL = """
+    r.puntaje_nem > 0 AND r.puntaje_ranking > 0
+    AND r.mate1_reg > 0 AND r.lectora_reg > 0
+    AND r.rindio_anterior = false AND r.situacion_egreso = 1
+"""
+
+# Umbrales
+thresholds = con.execute(f"""
+    SELECT
+        PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY (lectora_reg + mate1_reg)/2) as p90,
+        PERCENTILE_CONT(0.8) WITHIN GROUP (ORDER BY (lectora_reg + mate1_reg)/2) as p80
+    FROM resultados_paes r WHERE {WHERE_OFICIAL}
+""").fetchone()
+
+p90, p80 = thresholds
+
+# Origen del top 10% por dependencia
+origen_top10 = con.execute(f"""
+    SELECT
+        d.descripcion as dependencia,
+        COUNT(*) as estudiantes,
+        ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) as porcentaje
+    FROM resultados_paes r
+    JOIN ref_dependencia d ON r.dependencia = d.codigo
+    WHERE (r.lectora_reg + r.mate1_reg)/2 >= {p90} AND {WHERE_OFICIAL}
+    GROUP BY d.descripcion
+    ORDER BY estudiantes DESC
+""").fetchall()
+
+# Top escuelas con más estudiantes en el top 10%
+escuelas_top10 = con.execute(f"""
+    SELECT
+        e.nombre as establecimiento,
+        d.descripcion as dependencia,
+        c.comuna,
+        COUNT(*) as estudiantes_top10,
+        (SELECT COUNT(*) FROM resultados_paes r2
+         WHERE r2.rbd = e.rbd AND {WHERE_OFICIAL.replace('r.', 'r2.')}) as total_estudiantes
+    FROM resultados_paes r
+    JOIN establecimientos e ON r.rbd = e.rbd
+    JOIN ref_dependencia d ON r.dependencia = d.codigo
+    LEFT JOIN comunas c ON r.cod_comuna = c.cod_comuna
+    WHERE (r.lectora_reg + r.mate1_reg)/2 >= {p90} AND {WHERE_OFICIAL}
+    GROUP BY e.rbd, e.nombre, d.descripcion, c.comuna
+    ORDER BY estudiantes_top10 DESC
+    LIMIT 100
+""").fetchall()
+
+# Probabilidad de top 10% por dependencia
+prob_top10 = con.execute(f"""
+    SELECT
+        d.descripcion as dependencia,
+        COUNT(*) as total,
+        SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= {p90} THEN 1 ELSE 0 END) as en_top10,
+        ROUND(100.0 * SUM(CASE WHEN (r.lectora_reg + r.mate1_reg)/2 >= {p90} THEN 1 ELSE 0 END) / COUNT(*), 1) as pct_top10
+    FROM resultados_paes r
+    JOIN ref_dependencia d ON r.dependencia = d.codigo
+    WHERE {WHERE_OFICIAL}
+    GROUP BY d.descripcion
+    ORDER BY pct_top10 DESC
+""").fetchall()
+
+# Total en top 10%
+total_top10 = con.execute(f"""
+    SELECT COUNT(*) FROM resultados_paes r
+    WHERE (r.lectora_reg + r.mate1_reg)/2 >= {p90} AND {WHERE_OFICIAL}
+""").fetchone()[0]
+
+result = {
+    "umbrales": {"p90": round(p90, 0), "p80": round(p80, 0)},
+    "total_top10": total_top10,
+    "origen_top10": [
+        {"dependencia": r[0], "estudiantes": r[1], "porcentaje": r[2]}
+        for r in origen_top10
+    ],
+    "escuelas_top10": [
+        {"establecimiento": r[0], "dependencia": r[1], "comuna": r[2],
+         "estudiantes_top10": r[3], "total_estudiantes": r[4]}
+        for r in escuelas_top10
+    ],
+    "prob_top10": [
+        {"dependencia": r[0], "total": r[1], "en_top10": r[2], "pct_top10": r[3]}
+        for r in prob_top10
+    ]
+}
+
+json.dump(result, sys.stdout)
+```
+
+### `src/data/filtros.json.py`
+
+Opciones para selectores.
+
 ```python
 #!/usr/bin/env python3
 """Opciones para los selectores de filtros."""
@@ -368,74 +276,36 @@ ORDEN_REGIONES = {
 regiones = con.execute("""
     SELECT DISTINCT cod_region, region FROM comunas ORDER BY cod_region
 """).fetchall()
-
 regiones_ordenadas = sorted(regiones, key=lambda r: ORDEN_REGIONES.get(r[0], 99))
 
 dependencias = con.execute("SELECT codigo, descripcion FROM ref_dependencia ORDER BY codigo").fetchall()
-ramas = con.execute("SELECT codigo, descripcion FROM ref_rama ORDER BY codigo").fetchall()
 
 result = {
     "regiones": [{"codigo": r[0], "nombre": r[1]} for r in regiones_ordenadas],
-    "dependencias": [{"codigo": r[0], "nombre": r[1]} for r in dependencias],
-    "ramas": [{"codigo": r[0], "nombre": r[1]} for r in ramas]
+    "dependencias": [{"codigo": r[0], "nombre": r[1]} for r in dependencias]
 }
 
 json.dump(result, sys.stdout)
 ```
 
-### Páginas Markdown
+---
 
-#### `src/index.md` (Resumen)
+## Páginas
+
+### `src/index.md` (Ranking)
+
 ```markdown
 ---
-title: PAES 2026 - Explorador de Datos
+title: PAES 2026 - Ranking
 toc: false
 ---
 
-# PAES 2026 - Explorador de Datos
-
-Análisis de resultados de la Prueba de Acceso a la Educación Superior de Chile.
+# Ranking de Establecimientos
 
 ```js
-const resumen = await FileAttachment("data/resumen.json").json();
-const histLectora = await FileAttachment("data/histograma-lectora.json").json();
-```
+const escuelas = await FileAttachment("data/escuelas-ranking.json").json();
+const filtros = await FileAttachment("data/filtros.json").json();
 
-## Métricas Generales
-
-<div class="grid grid-cols-6">
-  <div class="card">
-    <h2>Total Postulantes</h2>
-    <span class="big">${resumen.totales.total.toLocaleString()}</span>
-  </div>
-  <div class="card">
-    <h2>Rindieron Lectora</h2>
-    <span class="big">${resumen.totales.rindieron_lectora.toLocaleString()}</span>
-  </div>
-  <div class="card">
-    <h2>Rindieron Mate 1</h2>
-    <span class="big">${resumen.totales.rindieron_mate1.toLocaleString()}</span>
-  </div>
-  <div class="card">
-    <h2>Prom. Lectora</h2>
-    <span class="big">${resumen.totales.prom_lectora}</span>
-  </div>
-  <div class="card">
-    <h2>Prom. Matemática 1</h2>
-    <span class="big">${resumen.totales.prom_mate1}</span>
-  </div>
-  <div class="card">
-    <h2>Prom. NEM</h2>
-    <span class="big">${resumen.totales.prom_nem}</span>
-  </div>
-</div>
-
-## Distribución por Dependencia
-
-<div class="grid grid-cols-2">
-<div>
-
-```js
 const colores = {
   'Particular Pagado': '#E63946',
   'Particular Subvencionado': '#457B9D',
@@ -443,79 +313,13 @@ const colores = {
   'Serv. Local Educación': '#E9C46A',
   'Corp. Administración Delegada': '#9B5DE5'
 };
-
-Plot.plot({
-  marginLeft: 180,
-  height: 300,
-  marks: [
-    Plot.barX(resumen.por_dependencia, {
-      y: "dependencia",
-      x: "cantidad",
-      fill: d => colores[d.dependencia],
-      sort: {y: "-x"}
-    }),
-    Plot.ruleX([0])
-  ]
-})
-```
-
-</div>
-<div>
-
-```js
-Plot.plot({
-  height: 300,
-  marks: [
-    Plot.arc(resumen.por_rama, {
-      value: "cantidad",
-      label: "rama",
-      innerRadius: 50
-    })
-  ]
-})
-```
-
-</div>
-</div>
-
-## Distribución de Puntajes PAES
-
-```js
-Plot.plot({
-  height: 400,
-  color: {legend: true, domain: Object.keys(colores), range: Object.values(colores)},
-  marks: [
-    Plot.rectY(histLectora, {
-      x: "bin",
-      y: "count",
-      fill: "dependencia",
-      interval: 20
-    }),
-    Plot.ruleY([0])
-  ]
-})
-```
-```
-
-#### `src/establecimientos.md` (Rankings)
-```markdown
----
-title: Análisis por Establecimiento
----
-
-# Análisis por Establecimiento
-
-```js
-const escuelas = await FileAttachment("data/escuelas-ranking.json").json();
-const filtros = await FileAttachment("data/filtros.json").json();
 ```
 
 <div class="note">
-💡 <strong>Nota metodológica</strong>: El DEMRE advierte que la PAES no fue diseñada para medir calidad educativa. Los rankings reflejan principalmente el nivel socioeconómico.
+💡 <strong>Nota metodológica</strong>: El DEMRE advierte que la PAES no fue diseñada para medir calidad educativa de establecimientos. Los rankings reflejan principalmente el nivel socioeconómico.
 </div>
 
 ```js
-// Filtros
 const regionSel = view(Inputs.select(
   [null, ...filtros.regiones],
   {label: "Región", format: d => d ? d.nombre : "Todas"}
@@ -526,45 +330,48 @@ const depSel = view(Inputs.select(
   {label: "Dependencia", format: d => d ? d.nombre : "Todas"}
 ));
 
-const topN = view(Inputs.range([10, 100], {value: 20, step: 10, label: "Mostrar"}));
+const orden = view(Inputs.radio(
+  ["Mejor promedio", "Más estudiantes", "Más en Top 10%"],
+  {value: "Mejor promedio", label: "Ordenar por"}
+));
+
+const topN = view(Inputs.range([10, 100], {value: 30, step: 10, label: "Mostrar"}));
 ```
 
 ```js
-// Filtrar datos
-const escuelasFiltradas = escuelas
+// Filtrar y ordenar
+let datos = escuelas
   .filter(e => !regionSel || e.cod_region === regionSel.codigo)
-  .filter(e => !depSel || e.dependencia === depSel.nombre)
-  .slice(0, topN);
+  .filter(e => !depSel || e.dependencia === depSel.nombre);
+
+if (orden === "Mejor promedio") datos.sort((a, b) => b.prom_lect_mate - a.prom_lect_mate);
+else if (orden === "Más estudiantes") datos.sort((a, b) => b.cantidad - a.cantidad);
+else datos.sort((a, b) => b.en_top10 - a.en_top10);
+
+datos = datos.slice(0, topN);
 ```
 
 ```js
-Inputs.table(escuelasFiltradas, {
-  columns: ["establecimiento", "dependencia", "region", "cantidad", "prom_lect_mate", "en_top10"],
+Inputs.table(datos, {
+  columns: ["establecimiento", "dependencia", "comuna", "cantidad", "prom_lect_mate", "en_top10"],
   header: {
     establecimiento: "Establecimiento",
     dependencia: "Dependencia",
-    region: "Región",
+    comuna: "Comuna",
     cantidad: "Estudiantes",
-    prom_lect_mate: "Promedio L+M",
-    en_top10: "En Top 10%"
-  }
+    prom_lect_mate: "Prom. L+M",
+    en_top10: "Top 10%"
+  },
+  sort: false
 })
 ```
 
 ```js
-const colores = {
-  'Particular Pagado': '#E63946',
-  'Particular Subvencionado': '#457B9D',
-  'Municipal': '#2A9D8F',
-  'Serv. Local Educación': '#E9C46A',
-  'Corp. Administración Delegada': '#9B5DE5'
-};
-
 Plot.plot({
-  marginLeft: 250,
-  height: Math.max(400, escuelasFiltradas.length * 25),
+  marginLeft: 280,
+  height: Math.max(400, datos.length * 22),
   marks: [
-    Plot.barX(escuelasFiltradas.slice(0, 20), {
+    Plot.barX(datos, {
       y: "establecimiento",
       x: "prom_lect_mate",
       fill: d => colores[d.dependencia],
@@ -576,21 +383,161 @@ Plot.plot({
 ```
 ```
 
-#### `src/buscar.md` (Buscar Establecimiento)
+### `src/crema.md` (La Crema)
+
 ```markdown
 ---
-title: Buscar Establecimiento
+title: La Crema - Top 10%
+toc: false
 ---
 
-# Buscar Establecimiento
+# La Crema: ¿De dónde viene el Top 10%?
+
+```js
+const data = await FileAttachment("data/brechas-top10.json").json();
+
+const colores = {
+  'Particular Pagado': '#E63946',
+  'Particular Subvencionado': '#457B9D',
+  'Municipal': '#2A9D8F',
+  'Serv. Local Educación': '#E9C46A',
+  'Corp. Administración Delegada': '#9B5DE5'
+};
+```
+
+<div class="grid grid-cols-3">
+  <div class="card">
+    <h2>Umbral Top 10%</h2>
+    <span class="big">${data.umbrales.p90} pts</span>
+  </div>
+  <div class="card">
+    <h2>Umbral Top 20%</h2>
+    <span class="big">${data.umbrales.p80} pts</span>
+  </div>
+  <div class="card">
+    <h2>Estudiantes en Top 10%</h2>
+    <span class="big">${data.total_top10.toLocaleString()}</span>
+  </div>
+</div>
+
+## Origen del Top 10% por Dependencia
+
+```js
+const pctNoPagado = data.origen_top10
+  .filter(d => d.dependencia !== 'Particular Pagado')
+  .reduce((sum, d) => sum + d.porcentaje, 0);
+```
+
+<div class="tip">
+<strong>${pctNoPagado.toFixed(1)}%</strong> del Top 10% NO viene de colegios particulares pagados
+</div>
+
+```js
+Plot.plot({
+  marginLeft: 200,
+  height: 250,
+  marks: [
+    Plot.barX(data.origen_top10, {
+      y: "dependencia",
+      x: "estudiantes",
+      fill: d => colores[d.dependencia],
+      sort: {y: "-x"}
+    }),
+    Plot.text(data.origen_top10, {
+      y: "dependencia",
+      x: "estudiantes",
+      text: d => `${d.porcentaje}%`,
+      dx: 5,
+      textAnchor: "start"
+    }),
+    Plot.ruleX([0])
+  ]
+})
+```
+
+## Probabilidad de estar en el Top 10% según Dependencia
+
+```js
+Plot.plot({
+  marginLeft: 200,
+  height: 250,
+  marks: [
+    Plot.barX(data.prob_top10, {
+      y: "dependencia",
+      x: "pct_top10",
+      fill: d => colores[d.dependencia],
+      sort: {y: "-x"}
+    }),
+    Plot.text(data.prob_top10, {
+      y: "dependencia",
+      x: "pct_top10",
+      text: d => `${d.pct_top10}%`,
+      dx: 5,
+      textAnchor: "start"
+    }),
+    Plot.ruleX([0])
+  ],
+  x: {label: "% de estudiantes en Top 10%"}
+})
+```
+
+## Escuelas con más estudiantes en el Top 10%
+
+```js
+Inputs.table(data.escuelas_top10.slice(0, 30), {
+  columns: ["establecimiento", "dependencia", "comuna", "estudiantes_top10", "total_estudiantes"],
+  header: {
+    establecimiento: "Establecimiento",
+    dependencia: "Dependencia",
+    comuna: "Comuna",
+    estudiantes_top10: "En Top 10%",
+    total_estudiantes: "Total Est."
+  }
+})
+```
+
+```js
+Plot.plot({
+  height: 500,
+  marginLeft: 280,
+  marks: [
+    Plot.barX(data.escuelas_top10.slice(0, 25), {
+      y: "establecimiento",
+      x: "estudiantes_top10",
+      fill: d => colores[d.dependencia],
+      sort: {y: "-x"}
+    }),
+    Plot.ruleX([0])
+  ]
+})
+```
+```
+
+### `src/ficha.md` (La Ficha)
+
+```markdown
+---
+title: La Ficha - Buscar Establecimiento
+toc: false
+---
+
+# La Ficha: Buscar Establecimiento
 
 ```js
 const escuelas = await FileAttachment("data/escuelas-ranking.json").json();
+
+const colores = {
+  'Particular Pagado': '#E63946',
+  'Particular Subvencionado': '#457B9D',
+  'Municipal': '#2A9D8F',
+  'Serv. Local Educación': '#E9C46A',
+  'Corp. Administración Delegada': '#9B5DE5'
+};
 ```
 
 ```js
 const busqueda = view(Inputs.search(escuelas, {
-  placeholder: "Buscar establecimiento...",
+  placeholder: "Buscar establecimiento por nombre o comuna...",
   columns: ["establecimiento", "comuna"],
   format: d => `${d.establecimiento} - ${d.comuna}`
 }));
@@ -598,69 +545,127 @@ const busqueda = view(Inputs.search(escuelas, {
 
 ```js
 if (busqueda.length > 0) {
-  const escuela = busqueda[0];
+  const e = busqueda[0];
+
+  // Ranking nacional
+  const rankNacional = escuelas.findIndex(x => x.rbd === e.rbd) + 1;
+
   display(html`
-    <div class="card" style="max-width: 600px">
-      <h2>${escuela.establecimiento}</h2>
-      <div class="grid grid-cols-2">
-        <div><strong>Comuna:</strong> ${escuela.comuna}</div>
-        <div><strong>Región:</strong> ${escuela.region}</div>
-        <div><strong>Dependencia:</strong> ${escuela.dependencia}</div>
-        <div><strong>Estudiantes:</strong> ${escuela.cantidad}</div>
+    <div class="card" style="border-left: 4px solid ${colores[e.dependencia]}">
+      <h2>${e.establecimiento}</h2>
+      <div class="grid grid-cols-2" style="gap: 1rem">
+        <div><strong>Comuna:</strong> ${e.comuna}</div>
+        <div><strong>Región:</strong> ${e.region}</div>
+        <div><strong>Dependencia:</strong> ${e.dependencia}</div>
+        <div><strong>Estudiantes:</strong> ${e.cantidad}</div>
       </div>
-      <hr>
-      <div class="grid grid-cols-3">
-        <div class="card">
-          <h3>Prom. Lectora</h3>
-          <span class="big">${escuela.prom_lectora}</span>
-        </div>
-        <div class="card">
-          <h3>Prom. Mate 1</h3>
-          <span class="big">${escuela.prom_mate1}</span>
-        </div>
-        <div class="card">
-          <h3>Prom. L+M</h3>
-          <span class="big">${escuela.prom_lect_mate}</span>
-        </div>
+    </div>
+  `);
+
+  display(html`
+    <div class="grid grid-cols-4" style="margin-top: 1rem">
+      <div class="card">
+        <h3>Ranking Nacional</h3>
+        <span class="big">#${rankNacional}</span>
+        <small>de ${escuelas.length}</small>
       </div>
-      <p><strong>Estudiantes en Top 10% nacional:</strong> ${escuela.en_top10}</p>
+      <div class="card">
+        <h3>Prom. Lectora</h3>
+        <span class="big">${e.prom_lectora}</span>
+      </div>
+      <div class="card">
+        <h3>Prom. Mate 1</h3>
+        <span class="big">${e.prom_mate1}</span>
+      </div>
+      <div class="card">
+        <h3>Prom. L+M</h3>
+        <span class="big">${e.prom_lect_mate}</span>
+      </div>
+    </div>
+  `);
+
+  display(html`
+    <div class="grid grid-cols-4" style="margin-top: 1rem">
+      <div class="card">
+        <h3>Percentil 25</h3>
+        <span class="big">${e.p25}</span>
+      </div>
+      <div class="card">
+        <h3>Mediana</h3>
+        <span class="big">${e.mediana}</span>
+      </div>
+      <div class="card">
+        <h3>Percentil 75</h3>
+        <span class="big">${e.p75}</span>
+      </div>
+      <div class="card">
+        <h3>En Top 10%</h3>
+        <span class="big">${e.en_top10}</span>
+      </div>
     </div>
   `);
 
   // Escuelas cercanas (misma comuna)
   const cercanas = escuelas
-    .filter(e => e.comuna === escuela.comuna && e.rbd !== escuela.rbd)
+    .filter(x => x.comuna === e.comuna && x.rbd !== e.rbd)
     .slice(0, 10);
 
   if (cercanas.length > 0) {
-    display(html`<h3>Otros establecimientos en ${escuela.comuna}</h3>`);
+    display(html`<h3 style="margin-top: 2rem">Otros establecimientos en ${e.comuna}</h3>`);
+
+    // Comparación visual
+    const comparacion = [e, ...cercanas];
+    display(Plot.plot({
+      marginLeft: 250,
+      height: Math.max(300, comparacion.length * 30),
+      marks: [
+        Plot.barX(comparacion, {
+          y: "establecimiento",
+          x: "prom_lect_mate",
+          fill: d => d.rbd === e.rbd ? "#000" : colores[d.dependencia],
+          sort: {y: "-x"}
+        }),
+        Plot.ruleX([0])
+      ],
+      x: {label: "Promedio Lectora + Matemática"}
+    }));
+
     display(Inputs.table(cercanas, {
-      columns: ["establecimiento", "dependencia", "cantidad", "prom_lect_mate"]
+      columns: ["establecimiento", "dependencia", "cantidad", "prom_lect_mate", "en_top10"],
+      header: {
+        establecimiento: "Establecimiento",
+        dependencia: "Dependencia",
+        cantidad: "Est.",
+        prom_lect_mate: "Prom. L+M",
+        en_top10: "Top 10%"
+      }
     }));
   }
 }
 ```
 ```
 
-### Configuración
+---
 
-#### `observablehq.config.js`
+## Configuración
+
+### `observablehq.config.js`
+
 ```javascript
 export default {
-  title: "PAES 2026 Explorer",
+  title: "PAES 2026",
   pages: [
-    {name: "Resumen", path: "/"},
-    {name: "Por Establecimiento", path: "/establecimientos"},
-    {name: "Buscar", path: "/buscar"},
-    {name: "Por Región", path: "/regiones"},
-    {name: "Análisis de Brechas", path: "/brechas"}
+    {name: "Ranking", path: "/"},
+    {name: "La Crema", path: "/crema"},
+    {name: "La Ficha", path: "/ficha"}
   ],
   theme: "light",
-  base: "/paes2026/"  // Para GitHub Pages
+  base: "/paes2026/"
 };
 ```
 
-#### `.github/workflows/deploy.yml`
+### `.github/workflows/deploy.yml`
+
 ```yaml
 name: Deploy to GitHub Pages
 
@@ -714,99 +719,38 @@ jobs:
 
 ## Estimación de Tamaños
 
-| Dataset | Filas | Tamaño estimado |
-|---------|-------|-----------------|
-| resumen.json | 1 | < 1 KB |
-| histograma-lectora.json | ~400 bins | ~15 KB |
-| histograma-mate.json | ~400 bins | ~15 KB |
-| escuelas-ranking.json | ~3,000 | ~400 KB |
-| regiones.json | ~16 | ~2 KB |
-| comunas-top.json | ~100 | ~5 KB |
-| brechas.json | ~100 | ~10 KB |
-| filtros.json | ~50 | ~3 KB |
+| Archivo | Contenido | Tamaño estimado |
+|---------|-----------|-----------------|
+| escuelas-ranking.json | ~3,000 escuelas | ~400 KB |
+| brechas-top10.json | Top 10% + 100 escuelas | ~50 KB |
+| filtros.json | Regiones + dependencias | ~3 KB |
 
-**Total estimado**: ~500 KB vs 34 MB original (reducción del 98%)
+**Total**: ~450 KB (vs 34 MB original)
 
 ---
 
-## Limitaciones del Enfoque Simplificado
-
-### Lo que NO se puede hacer sin DuckDB-WASM:
-
-1. **Queries SQL arbitrarios en el cliente**: Los datos deben pre-calcularse
-2. **Filtros combinados dinámicos**: Requiere pre-generar todas las combinaciones o filtrar arrays en JS
-3. **Datos a nivel individual**: Solo agregaciones precomputadas
-
-### Soluciones:
-
-| Funcionalidad | Solución |
-|---------------|----------|
-| Filtros por región | Pre-incluir `cod_region` y filtrar en JS |
-| Filtros por dependencia | Pre-incluir `dependencia` y filtrar en JS |
-| Búsqueda de escuela | `Inputs.search()` sobre array completo |
-| Scatter plot individual | Usar muestra representativa (~5k puntos) |
-
-### Cuándo SÍ necesitarías DuckDB-WASM:
-
-- Queries SQL complejos definidos por el usuario
-- Datasets >10MB que no quieres enviar completos
-- Joins dinámicos entre múltiples tablas
-- Análisis exploratorio ad-hoc
-
----
-
-## Migración de Componentes
-
-| Streamlit | Observable Framework |
-|-----------|---------------------|
-| `st.metric()` | `<div class="card">` con CSS |
-| `st.dataframe()` | `Inputs.table()` |
-| `st.plotly_chart()` | `Plot.plot()` |
-| `st.sidebar` | Filtros inline con `view()` |
-| `st.multiselect()` | `Inputs.select({multiple: true})` |
-| `st.tabs()` | Páginas separadas (navegación) |
-| `st_searchbox()` | `Inputs.search()` |
-| `st.slider()` | `Inputs.range()` |
-| `st.checkbox()` | `Inputs.toggle()` |
-
----
-
-## Comandos Útiles
+## Comandos
 
 ```bash
+# Crear proyecto
+npx @observablehq/framework create paes-explorer
+
 # Desarrollo local
 npm run dev
 
-# Build para producción
+# Build
 npm run build
-
-# Ver build localmente
-npm run preview
 
 # Limpiar cache de data loaders
 rm -rf .observablehq/cache/
-
-# Forzar re-ejecución de un loader
-touch src/data/resumen.json.py
 ```
 
 ---
 
 ## Referencias
 
-### Observable Framework
-- [Sitio oficial](https://observablehq.com/framework/)
-- [Getting Started](https://observablehq.com/framework/getting-started)
+- [Observable Framework](https://observablehq.com/framework/)
 - [Data Loaders](https://observablehq.com/framework/data-loaders)
-- [Deploying](https://observablehq.com/framework/deploying)
-
-### Observable Plot
-- [Documentación](https://observablehq.com/plot/)
-- [Galería de ejemplos](https://observablehq.com/@observablehq/plot-gallery)
-
-### Observable Inputs
-- [Documentación](https://observablehq.com/framework/inputs)
-
-### Ejemplos de Referencia
-- [Framework Examples](https://github.com/observablehq/framework/tree/main/examples)
-- [Mosaic + Framework (si necesitas DuckDB-WASM)](https://idl.uw.edu/mosaic-framework-example/)
+- [Observable Plot](https://observablehq.com/plot/)
+- [Observable Inputs](https://observablehq.com/framework/inputs)
+- [Deploying to GitHub Pages](https://observablehq.com/framework/deploying)
