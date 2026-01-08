@@ -6,6 +6,9 @@ toc: false
 # El Top 10: ¿De dónde viene el Top 10%?
 
 ```js
+import { initializeTWind } from "./components/tailwind.js";
+const tw = initializeTWind({ invalidation });
+
 const data = await FileAttachment("data/brechas-top10.json").json();
 const escuelasRanking = await FileAttachment("data/escuelas-ranking.json").json();
 
@@ -28,18 +31,18 @@ const escuelasTop10 = data.escuelas_top10.map((e, i) => ({
 }));
 ```
 
-<div class="grid grid-cols-3">
-  <div class="card">
-    <h2>Umbral Top 10%</h2>
-    <span class="big">${data.umbrales.p90} pts</span>
+<div class="${tw`grid grid-cols-3 gap-4`}">
+  <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm`}">
+    <h2 class="${tw`text-xs font-medium text-slate-500 uppercase tracking-wide m-0 mb-2`}">Umbral Top 10%</h2>
+    <span class="${tw`text-3xl font-bold text-slate-800 leading-tight`}">${data.umbrales.p90} pts</span>
   </div>
-  <div class="card">
-    <h2>Umbral Top 20%</h2>
-    <span class="big">${data.umbrales.p80} pts</span>
+  <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm`}">
+    <h2 class="${tw`text-xs font-medium text-slate-500 uppercase tracking-wide m-0 mb-2`}">Umbral Top 20%</h2>
+    <span class="${tw`text-3xl font-bold text-slate-800 leading-tight`}">${data.umbrales.p80} pts</span>
   </div>
-  <div class="card">
-    <h2>Estudiantes en Top 10%</h2>
-    <span class="big">${data.total_top10.toLocaleString()}</span>
+  <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm`}">
+    <h2 class="${tw`text-xs font-medium text-slate-500 uppercase tracking-wide m-0 mb-2`}">Estudiantes en Top 10%</h2>
+    <span class="${tw`text-3xl font-bold text-slate-800 leading-tight`}">${data.total_top10.toLocaleString()}</span>
   </div>
 </div>
 

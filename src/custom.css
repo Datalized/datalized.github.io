@@ -1,23 +1,21 @@
 @import url("observablehq:default.css");
 @import url("observablehq:theme-air.css");
 
-/* Filters container - horizontal layout */
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem 2rem;
-  align-items: flex-end;
-  padding: 1.25rem 1.5rem;
-  background: var(--theme-background-alt);
-  border-radius: 12px;
-  margin-bottom: 1.5rem;
-}
-
-.filters form {
+/* Form elements */
+form {
   margin: 0;
 }
 
-/* Modern select inputs */
+/* Labels */
+form label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Select inputs */
 select {
   appearance: none;
   background: white;
@@ -34,21 +32,19 @@ select {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.filters select:hover,
 select:hover {
   border-color: #cbd5e1;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.filters select:focus,
 select:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-/* Modern radio buttons */
-.filters input[type="radio"] {
+/* Radio buttons */
+input[type="radio"] {
   appearance: none;
   width: 18px;
   height: 18px;
@@ -61,24 +57,23 @@ select:focus {
   vertical-align: middle;
 }
 
-.filters input[type="radio"]:hover {
+input[type="radio"]:hover {
   border-color: #3b82f6;
 }
 
-.filters input[type="radio"]:checked {
+input[type="radio"]:checked {
   border-color: #3b82f6;
   background: white;
   box-shadow: inset 0 0 0 4px #3b82f6;
 }
 
-.filters input[type="radio"] + label {
+input[type="radio"] + label {
   margin-right: 1rem;
   cursor: pointer;
   font-size: 0.9rem;
 }
 
-/* Modern range slider */
-.filters input[type="range"],
+/* Range slider */
 input[type="range"] {
   appearance: none;
   width: 140px;
@@ -88,7 +83,6 @@ input[type="range"] {
   cursor: pointer;
 }
 
-.filters input[type="range"]::-webkit-slider-thumb,
 input[type="range"]::-webkit-slider-thumb {
   appearance: none;
   width: 18px;
@@ -100,13 +94,12 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
-.filters input[type="range"]::-webkit-slider-thumb:hover,
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
   box-shadow: 0 3px 6px rgba(59, 130, 246, 0.4);
 }
 
-/* Modern text inputs */
+/* Text inputs */
 input[type="text"],
 input[type="search"],
 input[type="number"],
@@ -118,7 +111,7 @@ textarea {
   border-radius: 8px;
   padding: 0.6rem 1rem;
   font-size: 0.9rem;
-  width: 100%;
+  min-width: 400px;
   transition: all 0.2s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -148,83 +141,12 @@ textarea::placeholder {
   color: #94a3b8;
 }
 
-/* Labels */
-.filters label,
-form label {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-/* Note styling */
-.note {
-  background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
-  border-left: 4px solid #f59e0b;
-  padding: 0.75rem 1rem;
-  border-radius: 0 8px 8px 0;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  width: 100%;
-  max-width: 100%;
-}
-
 /* Tip styling */
 .tip {
   width: 100%;
   max-width: 100%;
 }
 
-/* Cards styling */
-.card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.card h2 {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-  margin: 0 0 0.5rem 0;
-}
-
-.card .big {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1e293b;
-  line-height: 1.2;
-}
-
-/* Ensure 4 columns on desktop */
-.grid-cols-4 {
-  grid-template-columns: repeat(4, 1fr) !important;
-}
-
-/* Responsive grid for cards */
-@media (max-width: 768px) {
-  .grid-cols-3,
-  .grid-cols-4 {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .grid-cols-3,
-  .grid-cols-4 {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-/* Text input in filters - wider */
-.filters input[type="text"] {
-  min-width: 400px;
-}
 
 /* School header card */
 .school-header {
@@ -254,39 +176,6 @@ form label {
   color: #475569;
 }
 
-/* Metrics grid */
-.metrics-grid {
-  margin-top: 1rem;
-  gap: 1rem;
-}
-
-.metric-card {
-  text-align: center;
-}
-
-.metric-card h3 {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 0.5rem 0;
-}
-
-.metric-card .big {
-  display: block;
-}
-
-.metric-card .big.highlight {
-  color: #3b82f6;
-}
-
-.metric-sub {
-  display: block;
-  font-size: 0.75rem;
-  color: #94a3b8;
-  margin-top: 0.25rem;
-}
 
 /* Section title */
 .section-title {

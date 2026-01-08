@@ -6,6 +6,9 @@ toc: false
 # La Ficha: Buscar Establecimiento
 
 ```js
+import { initializeTWind } from "./components/tailwind.js";
+const tw = initializeTWind({ invalidation });
+
 const escuelas = await FileAttachment("data/escuelas-ranking.json").json();
 
 const colores = {
@@ -17,7 +20,7 @@ const colores = {
 };
 ```
 
-<div class="filters">
+<div class="${tw`flex flex-wrap gap-x-8 gap-y-6 items-end p-5 bg-slate-100 rounded-xl mb-6`}">
 
 ```js
 // Crear opciones para el datalist
@@ -56,45 +59,45 @@ if (escuelaSeleccionada) {
   `);
 
   display(html`
-    <div class="grid grid-cols-4 metrics-grid">
-      <div class="card metric-card">
-        <h3>Ranking Nacional</h3>
-        <span class="big">#${e.rank_nacional}</span>
-        <small class="metric-sub">de ${escuelas.length.toLocaleString()}</small>
+    <div class="${tw`grid grid-cols-4 gap-4 mt-4`}">
+      <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm text-center`}">
+        <h3 class="${tw`text-[0.7rem] font-medium text-slate-500 uppercase tracking-wider m-0 mb-2`}">Ranking Nacional</h3>
+        <span class="${tw`text-3xl font-bold text-slate-800 block`}">#${e.rank_nacional}</span>
+        <small class="${tw`block text-xs text-slate-400 mt-1`}">de ${escuelas.length.toLocaleString()}</small>
       </div>
-      <div class="card metric-card">
-        <h3>Prom. Lectora</h3>
-        <span class="big">${e.prom_lectora}</span>
+      <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm text-center`}">
+        <h3 class="${tw`text-[0.7rem] font-medium text-slate-500 uppercase tracking-wider m-0 mb-2`}">Prom. Lectora</h3>
+        <span class="${tw`text-3xl font-bold text-slate-800 block`}">${e.prom_lectora}</span>
       </div>
-      <div class="card metric-card">
-        <h3>Prom. Mate 1</h3>
-        <span class="big">${e.prom_mate1}</span>
+      <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm text-center`}">
+        <h3 class="${tw`text-[0.7rem] font-medium text-slate-500 uppercase tracking-wider m-0 mb-2`}">Prom. Mate 1</h3>
+        <span class="${tw`text-3xl font-bold text-slate-800 block`}">${e.prom_mate1}</span>
       </div>
-      <div class="card metric-card">
-        <h3>Prom. L+M</h3>
-        <span class="big highlight">${e.prom_lect_mate}</span>
+      <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm text-center`}">
+        <h3 class="${tw`text-[0.7rem] font-medium text-slate-500 uppercase tracking-wider m-0 mb-2`}">Prom. L+M</h3>
+        <span class="${tw`text-3xl font-bold text-blue-500 block`}">${e.prom_lect_mate}</span>
       </div>
     </div>
   `);
 
   display(html`
-    <div class="grid grid-cols-4 metrics-grid">
-      <div class="card metric-card">
-        <h3>Percentil 25</h3>
-        <span class="big">${e.p25}</span>
+    <div class="${tw`grid grid-cols-4 gap-4 mt-4`}">
+      <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm text-center`}">
+        <h3 class="${tw`text-[0.7rem] font-medium text-slate-500 uppercase tracking-wider m-0 mb-2`}">Percentil 25</h3>
+        <span class="${tw`text-3xl font-bold text-slate-800 block`}">${e.p25}</span>
       </div>
-      <div class="card metric-card">
-        <h3>Mediana</h3>
-        <span class="big">${e.mediana}</span>
+      <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm text-center`}">
+        <h3 class="${tw`text-[0.7rem] font-medium text-slate-500 uppercase tracking-wider m-0 mb-2`}">Mediana</h3>
+        <span class="${tw`text-3xl font-bold text-slate-800 block`}">${e.mediana}</span>
       </div>
-      <div class="card metric-card">
-        <h3>Percentil 75</h3>
-        <span class="big">${e.p75}</span>
+      <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm text-center`}">
+        <h3 class="${tw`text-[0.7rem] font-medium text-slate-500 uppercase tracking-wider m-0 mb-2`}">Percentil 75</h3>
+        <span class="${tw`text-3xl font-bold text-slate-800 block`}">${e.p75}</span>
       </div>
-      <div class="card metric-card">
-        <h3>En Top 10%</h3>
-        <span class="big">${e.en_top10}</span>
-        <small class="metric-sub">${e.cantidad > 0 ? Math.round(e.en_top10 / e.cantidad * 100) : 0}%</small>
+      <div class="${tw`bg-white border border-slate-200 rounded-xl p-5 shadow-sm text-center`}">
+        <h3 class="${tw`text-[0.7rem] font-medium text-slate-500 uppercase tracking-wider m-0 mb-2`}">En Top 10%</h3>
+        <span class="${tw`text-3xl font-bold text-slate-800 block`}">${e.en_top10}</span>
+        <small class="${tw`block text-xs text-slate-400 mt-1`}">${e.cantidad > 0 ? Math.round(e.en_top10 / e.cantidad * 100) : 0}%</small>
       </div>
     </div>
   `);
