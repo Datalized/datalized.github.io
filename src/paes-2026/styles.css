@@ -5,6 +5,81 @@
 @import url("observablehq:theme-air.css");
 @import url("observablehq:theme-wide.css");
 
+/* ========================================
+   VARIABLES - Colores Datalized
+   ======================================== */
+
+:root {
+  --datalized-teal: #31B694;
+  --datalized-teal-light: #52BE9D;
+  --datalized-dark: #111827;
+  --datalized-gray: #374151;
+  --datalized-gray-light: #4B5563;
+}
+
+/* ========================================
+   TIPOGRAFÍA - Base y Títulos
+   ======================================== */
+
+body {
+  font-family: Raleway, "Raleway Fallback", system-ui, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Raleway, "Raleway Fallback", system-ui, sans-serif;
+}
+
+h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--datalized-dark);
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--datalized-dark);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--theme-foreground-faintest, #e2e8f0);
+}
+
+h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--datalized-gray);
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--datalized-gray-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Primer h2 después de h1 no necesita tanto margen superior */
+h1 + h2 {
+  margin-top: 1.5rem;
+}
+
+/* Títulos dentro de cards */
+.stat-card h2,
+.stat-card h3 {
+  border-bottom: none;
+  margin: 0 0 0.5rem 0;
+  padding-bottom: 0;
+}
+
 /* Contenedor de filtros */
 .filters {
   display: flex;
@@ -15,6 +90,152 @@
   background: var(--theme-background-alt, #f1f5f9);
   border-radius: 0.75rem;
   margin-bottom: 1.5rem;
+}
+
+/* ========================================
+   ESTILOS PARA Inputs (select, radio, range)
+   ======================================== */
+
+/* Cada input está envuelto en un form */
+.filters form {
+  margin-bottom: 0.5rem;
+}
+
+/* Labels de los inputs */
+.filters label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--theme-foreground-muted, #64748b);
+}
+
+/* Select dropdowns */
+.filters select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--theme-background, white);
+  border: 1px solid var(--theme-foreground-faintest, #e2e8f0);
+  border-radius: 0.5rem;
+  padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--theme-foreground, #1e293b);
+  cursor: pointer;
+  min-width: 180px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.filters select:hover {
+  border-color: var(--theme-foreground-muted, #94a3b8);
+}
+
+.filters select:focus {
+  outline: none;
+  border-color: var(--datalized-teal);
+  box-shadow: 0 0 0 3px rgba(49, 182, 148, 0.2);
+}
+
+/* Radio buttons */
+.filters input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--theme-foreground-faintest, #cbd5e1);
+  border-radius: 50%;
+  background: var(--theme-background, white);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+  margin-right: 0.375rem;
+}
+
+.filters input[type="radio"]:hover {
+  border-color: var(--datalized-teal);
+}
+
+.filters input[type="radio"]:checked {
+  border-color: var(--datalized-teal);
+  background: var(--datalized-teal);
+  box-shadow: inset 0 0 0 3px var(--theme-background, white);
+}
+
+/* Range slider */
+.filters input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 6px;
+  background: var(--theme-foreground-faintest, #e2e8f0);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.filters input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--datalized-teal);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s;
+}
+
+.filters input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.filters input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--datalized-teal);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Text input (para búsqueda) */
+.filters input[type="text"] {
+  background-color: var(--theme-background, white);
+  border: 1px solid var(--theme-foreground-faintest, #e2e8f0);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--theme-foreground, #1e293b);
+  min-width: 280px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.filters input[type="text"]:focus {
+  outline: none;
+  border-color: var(--datalized-teal);
+  box-shadow: 0 0 0 3px rgba(49, 182, 148, 0.2);
+}
+
+.filters input[type="text"]::placeholder {
+  color: var(--theme-foreground-muted, #94a3b8);
+}
+
+/* Number input junto al range */
+.filters input[type="number"] {
+  background-color: var(--theme-background, white);
+  border: 1px solid var(--theme-foreground-faintest, #e2e8f0);
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--theme-foreground, #1e293b);
+  width: 60px;
+  text-align: center;
+}
+
+.filters input[type="number"]:focus {
+  outline: none;
+  border-color: var(--datalized-teal);
 }
 
 /* Grid de estadísticas - responsivo */
@@ -31,7 +252,7 @@
   border: 1px solid var(--theme-foreground-faintest, #e2e8f0);
   border-radius: 0.75rem;
   padding: 1.25rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   text-align: center;
 }
 
@@ -54,7 +275,7 @@
 }
 
 .stat-card .value.highlight {
-  color: var(--theme-foreground-focus, #3b82f6);
+  color: var(--datalized-teal);
 }
 
 .stat-card small {
@@ -94,7 +315,178 @@
   margin-bottom: 1rem;
 }
 
-/* Responsive adjustments */
+/* ========================================
+   ESTILOS PARA Inputs.table
+   ======================================== */
+
+/* Zebra striping y hover en Inputs.table */
+table[class^="oi-"] tbody tr:nth-child(even) {
+  background: var(--theme-background-alt, #f8fafc);
+}
+
+table[class^="oi-"] tbody tr:hover {
+  background: rgba(49, 182, 148, 0.08);
+}
+
+/* ========================================
+   BADGES DE RANKING
+   ======================================== */
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0;
+  border-radius: 1rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Top 3 rankings con colores especiales */
+.rank-badge.gold {
+  background: linear-gradient(135deg, #fef3c7, #fcd34d);
+  color: #92400e;
+}
+
+.rank-badge.silver {
+  background: linear-gradient(135deg, #f1f5f9, #cbd5e1);
+  color: #475569;
+}
+
+.rank-badge.bronze {
+  background: linear-gradient(135deg, #fed7aa, #fdba74);
+  color: #9a3412;
+}
+
+.rank-badge.normal {
+  background: var(--theme-background-alt, #f1f5f9);
+  color: var(--theme-foreground-muted, #64748b);
+}
+
+/* ========================================
+   BADGES DE DEPENDENCIA
+   ======================================== */
+
+.dep-badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dep-badge.particular-pagado {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.dep-badge.particular-subvencionado {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.dep-badge.municipal {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.dep-badge.slep {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.dep-badge.admin-delegada {
+  background: #ffe4e6;
+  color: #be123c;
+}
+
+/* ========================================
+   INDICADOR TOP 10%
+   ======================================== */
+
+.top10-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.top10-bar {
+  width: 60px;
+  height: 8px;
+  background: var(--theme-foreground-faintest, #e2e8f0);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.top10-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.top10-bar-fill.excellent {
+  background: linear-gradient(90deg, var(--datalized-teal-light), var(--datalized-teal));
+}
+
+.top10-bar-fill.good {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.top10-bar-fill.moderate {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.top10-bar-fill.low {
+  background: linear-gradient(90deg, #94a3b8, #64748b);
+}
+
+.top10-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+/* ========================================
+   PUNTAJE PROMEDIO
+   ======================================== */
+
+.score-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-value.excellent {
+  color: var(--datalized-teal);
+}
+
+.score-value.good {
+  color: #2563eb;
+}
+
+.score-value.moderate {
+  color: #d97706;
+}
+
+.score-value.normal {
+  color: var(--theme-foreground, #1e293b);
+}
+
+/* Nombre del establecimiento */
+.school-name {
+  font-weight: 500;
+  color: var(--theme-foreground, #1e293b);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
 @media (max-width: 640px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -116,5 +508,16 @@
   .school-meta {
     flex-direction: column;
     gap: 0.5rem;
+  }
+
+  /* Badges responsivos */
+  .top10-bar {
+    width: 40px;
+  }
+
+  .rank-badge {
+    min-width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.75rem;
   }
 }

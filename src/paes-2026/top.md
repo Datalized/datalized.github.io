@@ -9,6 +9,7 @@ style: styles.css
 ```js
 const data = FileAttachment("data/brechas-top10.json").json();
 const escuelasRanking = FileAttachment("data/escuelas-ranking.json").json();
+import { rankBadge, depBadge, rankingAlign } from "./components/tableFormatters.js";
 
 const colores = {
   'Particular Pagado': '#E63946',
@@ -131,15 +132,22 @@ Inputs.table(escuelasTop10.slice(0, 30), {
     estudiantes_top10: "Est. 10%",
     total_estudiantes: "Total Est."
   },
-    width: {
-    rank_top10: 50,
-    rank_nacional: 20,
+  format: {
+    rank_top10: d => rankBadge(d),
+    rank_nacional: d => rankBadge(d),
+    establecimiento: d => html`<span class="school-name">${d}</span>`,
+    dependencia: d => depBadge(d)
+  },
+  align: rankingAlign,
+  width: {
+    rank_top10: 60,
+    rank_nacional: 60,
     estudiantes_top10: 80,
     total_estudiantes: 80,
-    en_top10: 80,
     dependencia: 120,
     comuna: 100
   },
+  select: false
 })
 ```
 

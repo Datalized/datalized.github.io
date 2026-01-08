@@ -51,12 +51,12 @@ result = con.execute(f"""
 data = [
     {
         "rbd": r[0], 
-        "establecimiento": r[1], 
+        "establecimiento": r[1].title() if r[1] else r[1], 
         "dependencia": r[2],
         "cod_region": r[3], 
         "cod_comuna": r[4], 
-        "region": r[5], 
-        "comuna": r[6],
+        "region": r[5].title() if r[5] else r[5], 
+        "comuna": r[6].title() if r[6] else r[6],
         "lat": r[7], 
         "lon": r[8], 
         "cantidad": r[9],

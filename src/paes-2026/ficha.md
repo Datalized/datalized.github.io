@@ -8,6 +8,7 @@ style: styles.css
 
 ```js
 const escuelas = FileAttachment("data/escuelas-ranking.json").json();
+import { rankBadge, depBadge, scoreValue, top10Indicator, rankingAlign } from "./components/tableFormatters.js";
 
 const colores = {
   'Particular Pagado': '#E63946',
@@ -137,7 +138,17 @@ if (escuelaSeleccionada) {
         cantidad: "Est.",
         prom_lect_mate: "Prom. L+M",
         en_top10: "Top 10%"
-      }
+      },
+      format: {
+        rank_nacional: d => rankBadge(d),
+        rank_comuna: d => rankBadge(d),
+        establecimiento: d => html`<span class="school-name">${d}</span>`,
+        dependencia: d => depBadge(d),
+        prom_lect_mate: d => scoreValue(d),
+        en_top10: (d, i, data) => top10Indicator(d, data[i].cantidad)
+      },
+      align: rankingAlign,
+      select: false
     }));
   }
 }
