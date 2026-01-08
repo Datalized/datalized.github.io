@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "observable preview",
-    "build": "observable build",
+    "dev": "PATH=.venv/bin:$PATH observable preview",
+    "build": "PATH=.venv/bin:$PATH observable build",
     "clean": "rm -rf dist .observablehq/cache"
   },
   "dependencies": {
