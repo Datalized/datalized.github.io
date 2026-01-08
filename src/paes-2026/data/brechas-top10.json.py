@@ -51,7 +51,6 @@ escuelas_top10 = con.execute(f"""
     WHERE (r.lectora_reg + r.mate1_reg)/2 >= {p90} AND {WHERE_OFICIAL}
     GROUP BY e.rbd, e.nombre, d.descripcion, c.comuna
     ORDER BY estudiantes_top10 DESC
-    LIMIT 100
 """).fetchall()
 
 # Probabilidad de top 10% por dependencia
@@ -78,16 +77,16 @@ result = {
     "umbrales": {"p90": round(p90, 0), "p80": round(p80, 0)},
     "total_top10": total_top10,
     "origen_top10": [
-        {"dependencia": r[0], "estudiantes": r[1], "porcentaje": r[2]}
+        {"dependencia": r[0].title(), "estudiantes": r[1], "porcentaje": r[2]}
         for r in origen_top10
     ],
     "escuelas_top10": [
-        {"establecimiento": r[0], "dependencia": r[1], "comuna": r[2],
+        {"establecimiento": r[0].title(), "dependencia": r[1].title(), "comuna": r[2].title(),
          "estudiantes_top10": r[3], "total_estudiantes": r[4]}
         for r in escuelas_top10
     ],
     "prob_top10": [
-        {"dependencia": r[0], "total": r[1], "en_top10": r[2], "pct_top10": r[3]}
+        {"dependencia": r[0].title(), "total": r[1], "en_top10": r[2], "pct_top10": r[3]}
         for r in prob_top10
     ]
 }

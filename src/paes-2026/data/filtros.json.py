@@ -24,9 +24,9 @@ comunas = con.execute("""
 dependencias = con.execute("SELECT codigo, descripcion FROM ref_dependencia ORDER BY codigo").fetchall()
 
 result = {
-    "regiones": [{"codigo": r[0], "nombre": r[1]} for r in regiones_ordenadas],
-    "comunas": [{"codigo": r[0], "nombre": r[1]} for r in comunas],
-    "dependencias": [{"codigo": r[0], "nombre": r[1]} for r in dependencias]
+    "regiones": [{"codigo": r[0], "nombre": r[1].title()} for r in regiones_ordenadas],
+    "comunas": [{"codigo": r[0], "nombre": r[1].title()} for r in comunas],
+    "dependencias": [{"codigo": r[0], "nombre": r[1].title()} for r in dependencias]
 }
 
 json.dump(result, sys.stdout)

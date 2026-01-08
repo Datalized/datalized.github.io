@@ -25,7 +25,12 @@ body {
   font-family: Raleway, "Raleway Fallback", system-ui, sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: Raleway, "Raleway Fallback", system-ui, sans-serif;
 }
 
@@ -68,7 +73,7 @@ h4 {
 }
 
 /* Primer h2 después de h1 no necesita tanto margen superior */
-h1 + h2 {
+h1+h2 {
   margin-top: 1.5rem;
 }
 
@@ -78,6 +83,27 @@ h1 + h2 {
   border-bottom: none;
   margin: 0 0 0.5rem 0;
   padding-bottom: 0;
+}
+
+/* ========================================
+   PÁRRAFOS - Ancho óptimo para lectura
+   ======================================== */
+
+/* Párrafos normales - ancho máximo para legibilidad */
+#observablehq-main p,
+.observablehq p {
+  max-width: none;
+  line-height: 1.7;
+  color: var(--datalized-gray);
+  margin-bottom: 1.25rem;
+}
+
+/* Excepciones: párrafos dentro de cards o filtros no deben tener max-width */
+.stat-card p,
+.filters p,
+.school-header p,
+.tip p {
+  max-width: none;
 }
 
 /* Contenedor de filtros */
@@ -90,6 +116,64 @@ h1 + h2 {
   background: var(--theme-background-alt, #f1f5f9);
   border-radius: 0.75rem;
   margin-bottom: 1.5rem;
+}
+
+/* ========================================
+   ELEMENTOS DESTACADOS - Tips y Callouts
+   ======================================== */
+
+.tip {
+  max-width: 50rem;
+  /* Más ancho que párrafos normales */
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, rgba(49, 182, 148, 0.08), rgba(49, 182, 148, 0.04));
+  border-left: 4px solid var(--datalized-teal);
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--datalized-dark);
+}
+
+.tip strong {
+  color: var(--datalized-teal);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+/* ========================================
+   FIGURAS - Gráficos con caption
+   ======================================== */
+
+figure {
+  margin: 2rem auto; /* Centrar la figura */
+  padding: 0;
+  max-width: 80rem; /* Ancho mayor para gráficos (1280px) */
+}
+
+figure .plot-container {
+  background: var(--theme-background, white);
+  border: 1px solid var(--theme-foreground-faintest, #e2e8f0);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+figcaption {
+  font-size: 0.875rem;
+  color: var(--datalized-gray-light);
+  font-style: italic;
+  text-align: center;
+  line-height: 1.5;
+  padding: 0 1rem;
+  max-width: none; /* Caption puede usar todo el ancho de la figura */
+}
+
+figcaption strong {
+  font-weight: 600;
+  color: var(--datalized-gray);
+  font-style: normal;
 }
 
 /* ========================================
@@ -241,37 +325,56 @@ h1 + h2 {
 /* Grid de estadísticas - responsivo */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
-  margin: 1rem 0;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
 }
 
 /* Tarjeta de estadística */
 .stat-card {
   background: var(--theme-background, white);
   border: 1px solid var(--theme-foreground-faintest, #e2e8f0);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
   text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--datalized-teal), var(--datalized-teal-light));
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
 }
 
 .stat-card h2,
 .stat-card h3 {
   font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--theme-foreground-muted, #64748b);
+  font-weight: 600;
+  color: var(--datalized-gray-light);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.75rem 0;
 }
 
 .stat-card .value {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 700;
-  color: var(--theme-foreground, #1e293b);
+  color: var(--datalized-dark);
   line-height: 1.2;
   display: block;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-card .value.highlight {
@@ -281,8 +384,8 @@ h1 + h2 {
 .stat-card small {
   display: block;
   font-size: 0.75rem;
-  color: var(--theme-foreground-muted, #94a3b8);
-  margin-top: 0.25rem;
+  color: var(--datalized-gray-light);
+  margin-top: 0.5rem;
 }
 
 /* Header de escuela (ficha) */

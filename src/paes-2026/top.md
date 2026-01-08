@@ -4,7 +4,11 @@ toc: false
 style: styles.css
 ---
 
-# El Top 10: ¿De dónde viene el Top 10%?
+# El Top 10
+
+
+Una mirada rápida a quiénes concentran el **Top 10%** de puntajes en la PAES y cómo varía esa presencia según **dependencia** del establecimiento.
+
 
 ```js
 const data = FileAttachment("data/brechas-top10.json").json();
@@ -30,6 +34,11 @@ const escuelasTop10 = data.escuelas_top10.map((e, i) => ({
   rank_top10: i + 1,
   rank_nacional: rankNacionalMap.get(e.establecimiento) || '-'
 }));
+
+// colegios con estudiantes en el top 10%
+const colegiosTop10Set = new Set(escuelasTop10.filter(e => e.estudiantes_top10 > 0).map(e => e.establecimiento));
+const totalColegiosTop10 = colegiosTop10Set.size;
+
 ```
 
 <div class="stats-grid">
@@ -45,9 +54,16 @@ const escuelasTop10 = data.escuelas_top10.map((e, i) => ({
     <h2>Estudiantes en Top 10%</h2>
     <span class="value">${data.total_top10.toLocaleString()}</span>
   </div>
+  <div class="stat-card">
+    <h2>Colegios con estudiantes en Top 10%</h2>
+    <span class="value">${totalColegiosTop10.toLocaleString()}</span>
+  </div>
 </div>
 
 ## Origen del Top 10% por Dependencia
+
+Este gráfico muestra *de qué tipo de establecimiento* provienen los estudiantes que están en el Top 10% (en valores absolutos y con el porcentaje sobre el total del Top 10%).
+
 
 ```js
 const pctNoPagado = data.origen_top10
@@ -59,69 +75,52 @@ const pctNoPagado = data.origen_top10
 <strong>${pctNoPagado.toFixed(1)}%</strong> del Top 10% NO viene de colegios particulares pagados
 </div>
 
-```js
-resize((width) => Plot.plot({
-  width,
-  marginLeft: Math.min(200, width * 0.35),
-  height: 220,
-  style: {fontSize: "12px"},
-  y: {label: null},
-  marks: [
-    Plot.barX(data.origen_top10, {
-      y: "dependencia",
-      x: "estudiantes",
-      fill: d => colores[d.dependencia],
-      sort: {y: "-x"},
-      tip: true
-    }),
-    Plot.text(data.origen_top10, {
-      y: "dependencia",
-      x: "estudiantes",
-      text: d => `${d.porcentaje}%`,
-      dx: 5,
-      textAnchor: "start",
-      fontSize: 11
-    }),
-    Plot.ruleX([0])
-  ]
-}))
-```
-
-## Probabilidad de estar en el Top 10% según Dependencia
-
-```js
-resize((width) => Plot.plot({
-  width,
-  marginLeft: Math.min(200, width * 0.35),
-  height: 220,
-  style: {fontSize: "12px"},
-  y: {label: null},
-  marks: [
-    Plot.barX(data.prob_top10, {
-      y: "dependencia",
-      x: "pct_top10",
-      fill: d => colores[d.dependencia],
-      sort: {y: "-x"},
-      tip: true
-    }),
-    Plot.text(data.prob_top10, {
-      y: "dependencia",
-      x: "pct_top10",
-      text: d => `${d.pct_top10}%`,
-      dx: 5,
-      textAnchor: "start",
-      fontSize: 11
-    }),
-    Plot.ruleX([0])
-  ],
-  x: {label: "% en Top 10%"}
-}))
-```
+<figure>
+  <div class="plot-container">
+    ${resize((width) => Plot.plot({
+      width,
+      marginLeft: Math.min(200, width * 0.35),
+      height: 220,
+      style: {fontSize: "12px"},
+      y: {label: null},
+      x: {label: "Número de estudiantes"},
+      marks: [
+        Plot.barX(data.origen_top10, {
+          y: "dependencia",
+          x: "estudiantes",
+          fill: d => colores[d.dependencia],
+          sort: {y: "-x"},
+          tip: {
+            format: {
+              y: true,
+              x: d => `${d.toLocaleString()} estudiantes (${data.origen_top10.find(item => item.estudiantes === d)?.porcentaje}%)`
+            }
+          }
+        }),
+        Plot.text(data.origen_top10, {
+          y: "dependencia",
+          x: "estudiantes",
+          text: d => `${d.porcentaje}%`,
+          dx: 5,
+          textAnchor: "start",
+          fontSize: 11,
+          fill: "currentColor"
+        }),
+        Plot.ruleX([0])
+      ]
+    }))}
+  </div>
+  <figcaption><strong>Figura 1:</strong> Composición del Top 10% por tipo de establecimiento (valores absolutos y porcentajes)</figcaption>
+</figure>
 
 ## Escuelas con más estudiantes en el Top 10%
 
+Ranking de establecimientos por **cantidad de estudiantes en Top 10%**. El “ranking nacional” corresponde al ranking general del proyecto (no solo Top 10%).
+
+
+
 ```js
-Inputs.table(escuelasTop10.slice(0, 30), {
+Inputs.table(escuelasTop10.slice(0, 100), {
   columns: ["rank_top10", "rank_nacional", "establecimiento", "dependencia", "comuna", "estudiantes_top10", "total_estudiantes"],
   header: {
     rank_top10: "#Top10",
@@ -147,27 +146,7 @@ Inputs.table(escuelasTop10.slice(0, 30), {
     dependencia: 120,
     comuna: 100
   },
+  height: 'auto',
   select: false
 })
-```
-
-```js
-resize((width) => Plot.plot({
-  width,
-  marginLeft: Math.min(280, width * 0.4),
-  height: Math.max(400, escuelasTop10.slice(0, 20).length * 24),
-  style: {fontSize: "11px"},
-  y: {label: null},
-  marks: [
-    Plot.barX(escuelasTop10.slice(0, 20), {
-      y: "establecimiento",
-      x: "estudiantes_top10",
-      fill: d => colores[d.dependencia],
-      sort: {y: "-x"},
-      tip: true
-    }),
-    Plot.ruleX([0])
-  ],
-  x: {label: "Estudiantes en Top 10%"}
-}))
 ```

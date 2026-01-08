@@ -52,7 +52,7 @@ data = [
     {
         "rbd": r[0], 
         "establecimiento": r[1].title() if r[1] else r[1], 
-        "dependencia": r[2],
+        "dependencia": r[2].title(),
         "cod_region": r[3], 
         "cod_comuna": r[4], 
         "region": r[5].title() if r[5] else r[5], 
