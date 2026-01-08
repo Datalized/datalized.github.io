@@ -107,3 +107,96 @@ Located in `raw-data/paes-2026/`:
 - Official filters for matching DEMRE statistics: `puntaje_nem > 0`, `rindio_anterior = false`, `situacion_egreso = 1`
 - All database queries are read-only; modifications go through the notebook pipeline
 - Region ordering uses north-to-south geographic mapping (dict `ORDEN_REGIONES`)
+
+## Observable Framework Reference
+
+Full documentation: [`docs/observable.md`](docs/observable.md)
+
+### Markdown Pages
+
+**Front matter** (YAML at top of `.md` files):
+```yaml
+---
+title: Página de ejemplo
+toc: false
+theme: dashboard
+---
+```
+
+**Layouts** - Use CSS grid classes for dashboards:
+```html
+<div class="grid grid-cols-4">
+  <div class="card"><h2>Título</h2>Contenido</div>
+</div>
+```
+- Grid classes: `grid-cols-2`, `grid-cols-3`, `grid-cols-4`
+- Span classes: `grid-colspan-2`, `grid-rowspan-2`
+
+### JavaScript in Markdown
+
+**Code blocks** (display implícito sin `;`):
+```js
+Plot.barY(data, {x: "category", y: "value"}).plot()
+```
+
+**Inline expressions**:
+```markdown
+El total es ${data.length.toLocaleString("es-CL")} registros.
+```
+
+**Display explícito**:
+```js
+const result = await fetch("data.json");
+display(result);
+```
+
+### Data Loading
+
+**FileAttachment** (para archivos en `src/`):
+```js
+const data = FileAttachment("paes-2026/data/escuelas-ranking.json").json();
+```
+
+**Data loaders** output to stdout, cached in `.observablehq/cache/`:
+```python
+# src/paes-2026/data/example.json.py
+import json
+print(json.dumps({"key": "value"}))
+```
+
+### Reactivity
+
+**Inputs** - Create reactive UI elements:
+```js
+const region = view(Inputs.select(regiones, {label: "Región:", value: "Metropolitana"}));
+```
+
+**Generators** - For reactive values:
+```js
+const searchInput = Inputs.text({placeholder: "Buscar..."});
+const search = Generators.input(searchInput);
+```
+
+**Built-in reactive variables**: `now` (timestamp), `width` (viewport width)
+
+### Observable Plot
+
+```js
+// Bar chart
+Plot.barY(data, {x: "nombre", y: "puntaje", fill: "dependencia"}).plot()
+
+// Line chart with grid
+Plot.lineY(data, {x: "fecha", y: "valor"}).plot({y: {grid: true}})
+
+// Responsive chart
+Plot.barX(data, {y: "label", x: "value"}).plot({width})
+```
+
+### Theme Variables
+
+Use CSS custom properties for consistent styling:
+```js
+Plot.dot(data, {fill: "var(--theme-foreground-focus)"})
+```
+
+Available: `--theme-foreground`, `--theme-background`, `--theme-foreground-focus`, `--theme-foreground-muted`
