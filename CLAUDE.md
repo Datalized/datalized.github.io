@@ -78,7 +78,7 @@ Search Institution tab features:
 
 Static site with three pages:
 - `src/index.md` - Ranking (homepage)
-- `src/crema.md` - La Crema (Top 10% analysis)
+- `src/top.md` - El Top (Top 10% analysis)
 - `src/ficha.md` - La Ficha (school search)
 
 Data loaders in `src/data/` (Python scripts that query DuckDB at build time):

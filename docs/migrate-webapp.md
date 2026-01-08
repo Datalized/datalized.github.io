@@ -17,7 +17,7 @@ Este documento describe cómo migrar la aplicación PAES 2026 Explorer de Stream
 | Sección | Descripción | Datos necesarios |
 |---------|-------------|------------------|
 | **Ranking** | Rankings de establecimientos con filtros | escuelas-ranking.json |
-| **La Crema** | Análisis del Top 10% nacional | brechas-top10.json |
+| **El Top 10** | Análisis del Top 10% nacional | brechas-top10.json |
 | **La Ficha** | Búsqueda y ficha de establecimiento | escuelas-ranking.json |
 
 ---
@@ -68,7 +68,7 @@ Este documento describe cómo migrar la aplicación PAES 2026 Explorer de Stream
 paes-explorer/
 ├── src/
 │   ├── index.md                    # Ranking (página principal)
-│   ├── crema.md                    # La Crema (Top 10%)
+│   ├── top.md                    # El Top 10 (Top 10%)
 │   ├── ficha.md                    # La Ficha (búsqueda)
 │   ├── data/
 │   │   ├── escuelas-ranking.json.py
@@ -154,7 +154,7 @@ json.dump(data, sys.stdout)
 
 ### `src/data/brechas-top10.json.py`
 
-Usado por **La Crema**.
+Usado por **El Top 10**.
 
 ```python
 #!/usr/bin/env python3
@@ -383,15 +383,15 @@ Plot.plot({
 ```
 ```
 
-### `src/crema.md` (La Crema)
+### `src/top.md` (El Top 10)
 
 ```markdown
 ---
-title: La Crema - Top 10%
+title: El Top 10 - Top 10%
 toc: false
 ---
 
-# La Crema: ¿De dónde viene el Top 10%?
+# El Top 10: ¿De dónde viene el Top 10%?
 
 ```js
 const data = await FileAttachment("data/brechas-top10.json").json();
@@ -656,7 +656,7 @@ export default {
   title: "PAES 2026",
   pages: [
     {name: "Ranking", path: "/"},
-    {name: "La Crema", path: "/crema"},
+    {name: "El Top 10", path: "/top"},
     {name: "La Ficha", path: "/ficha"}
   ],
   theme: "light",

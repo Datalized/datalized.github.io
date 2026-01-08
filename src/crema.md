@@ -1,9 +1,9 @@
 ---
-title: La Crema - Top 10%
+title: El Top 10 - Top 10%
 toc: false
 ---
 
-# La Crema: ¿De dónde viene el Top 10%?
+# El Top 10: ¿De dónde viene el Top 10%?
 
 ```js
 const data = await FileAttachment("data/brechas-top10.json").json();
