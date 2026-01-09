@@ -154,13 +154,13 @@ if (escuelaPreseleccionada) {
     display(Inputs.table(comparacion.sort((a, b) => b.prom_lect_mate - a.prom_lect_mate), {
       columns: ["rank_comuna", "establecimiento", "dependencia", "prom_lect_mate", "cantidad", "en_top10", "rank_nacional"],
       header: {
-        rank_comuna: "#",
-        establecimiento: "Establecimiento",
-        dependencia: "Dependencia",
-        prom_lect_mate: "Prom. L+M",
-        cantidad: "Est.",
-        en_top10: "Top 10%",
-        rank_nacional: "# Nac."
+        rank_comuna: html`<span title="Ranking dentro de la comuna">#</span>`,
+        establecimiento: html`<span title="Haz clic para ver la ficha detallada">Establecimiento</span>`,
+        dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
+        prom_lect_mate: html`<span title="Promedio Lectora + Matemática">Prom. L+M</span>`,
+        cantidad: html`<span title="Cantidad de estudiantes">Est.</span>`,
+        en_top10: html`<span title="Estudiantes en el Top 10% nacional">Top 10%</span>`,
+        rank_nacional: html`<span title="Ranking nacional"># Nac.</span>`
       },
       format: {
         rank_comuna: d => rankBadge(d),
@@ -242,13 +242,13 @@ if (!escuelaPreseleccionada) {
   display(Inputs.table(escuelasFiltradas, {
     columns: ["rank_nacional", "establecimiento", "dependencia", "prom_lect_mate", "comuna", "region", "cantidad"],
     header: {
-      rank_nacional: "#",
-      establecimiento: "Establecimiento",
-      dependencia: "Dependencia",
-      prom_lect_mate: "Prom. L+M",
-      comuna: "Comuna",
-      region: "Región",
-      cantidad: "Est."
+      rank_nacional: html`<span title="Ranking nacional por promedio Lectora + Matemática">#</span>`,
+      establecimiento: html`<span title="Haz clic para ver la ficha detallada">Establecimiento</span>`,
+      dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
+      prom_lect_mate: html`<span title="Promedio de puntajes en Competencia Lectora y Matemática 1">Prom. L+M</span>`,
+      comuna: html`<span title="Comuna donde se ubica el establecimiento">Comuna</span>`,
+      region: html`<span title="Región del país">Región</span>`,
+      cantidad: html`<span title="Cantidad de estudiantes que rindieron la PAES">Est.</span>`
     },
     format: {
       rank_nacional: d => rankBadge(d),

@@ -130,13 +130,13 @@ Ranking de establecimientos por **cantidad de estudiantes en Top 10%**. El “ra
 Inputs.table(escuelasTop10.slice(0, 100), {
   columns: ["rank_top10", "establecimiento", "dependencia", "estudiantes_top10", "comuna", "total_estudiantes", "rank_nacional"],
   header: {
-    rank_top10: "#",
-    establecimiento: "Establecimiento",
-    dependencia: "Dependencia",
-    estudiantes_top10: "Top 10%",
-    comuna: "Comuna",
-    total_estudiantes: "Total",
-    rank_nacional: "# Nac."
+    rank_top10: html`<span title="Ranking por cantidad de estudiantes en Top 10%">#</span>`,
+    establecimiento: html`<span title="Nombre del establecimiento educacional">Establecimiento</span>`,
+    dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
+    estudiantes_top10: html`<span title="Cantidad de estudiantes en el Top 10% nacional">Top 10%</span>`,
+    comuna: html`<span title="Comuna donde se ubica el establecimiento">Comuna</span>`,
+    total_estudiantes: html`<span title="Total de estudiantes que rindieron la PAES">Total</span>`,
+    rank_nacional: html`<span title="Ranking nacional por promedio"># Nac.</span>`
   },
   format: {
     rank_top10: d => rankBadge(d),

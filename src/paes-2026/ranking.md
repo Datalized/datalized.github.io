@@ -71,14 +71,14 @@ datos = datos.slice(0, topN);
 Inputs.table(datos, {
   columns: ["rank_nacional", "establecimiento", "dependencia", "prom_lect_mate", "comuna", "cantidad", "en_top10", "rank_comuna"],
   header: {
-    rank_nacional: "#",
-    establecimiento: "Establecimiento",
-    dependencia: "Dependencia",
-    prom_lect_mate: "Prom. L+M",
-    comuna: "Comuna",
-    cantidad: "Est.",
-    en_top10: "Top 10%",
-    rank_comuna: "# Com."
+    rank_nacional: html`<span title="Ranking nacional por promedio Lectora + Matemática">#</span>`,
+    establecimiento: html`<span title="Nombre del establecimiento educacional">Establecimiento</span>`,
+    dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
+    prom_lect_mate: html`<span title="Promedio de puntajes en Competencia Lectora y Matemática 1">Prom. L+M</span>`,
+    comuna: html`<span title="Comuna donde se ubica el establecimiento">Comuna</span>`,
+    cantidad: html`<span title="Cantidad de estudiantes que rindieron la PAES">Est.</span>`,
+    en_top10: html`<span title="Estudiantes en el Top 10% nacional">Top 10%</span>`,
+    rank_comuna: html`<span title="Ranking dentro de la comuna"># Com.</span>`
   },
   format: {
     rank_nacional: d => rankBadge(d),
