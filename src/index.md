@@ -14,7 +14,9 @@ style: index-styles.css
   <a href="./paes-2026/" class="project-card">
     <h3>PAES 2026</h3>
     <p>Resultados de la Prueba de Acceso a la Educación Superior. Rankings de establecimientos, análisis por dependencia y brechas educativas.</p>
-    <span class="tag">306K postulantes</span>
+    <span class="tag">educación</span>
+    <span class="tag">2026</span>
+    <span class="tag">paes</span>
   </a>
 
   <div class="project-card disabled">
