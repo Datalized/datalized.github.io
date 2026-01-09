@@ -152,15 +152,15 @@ if (escuelaPreseleccionada) {
 
     display(html`<h3>Tabla comparativa</h3>`);
     display(Inputs.table(comparacion.sort((a, b) => b.prom_lect_mate - a.prom_lect_mate), {
-      columns: ["rank_nacional", "rank_comuna", "establecimiento", "dependencia", "cantidad", "prom_lect_mate", "en_top10"],
+      columns: ["rank_comuna", "establecimiento", "dependencia", "prom_lect_mate", "cantidad", "en_top10", "rank_nacional"],
       header: {
-        rank_comuna: "# Com.",
-        rank_nacional: "# Nac.",
+        rank_comuna: "#",
         establecimiento: "Establecimiento",
         dependencia: "Dependencia",
-        cantidad: "Est.",
         prom_lect_mate: "Prom. L+M",
-        en_top10: "Top 10%"
+        cantidad: "Est.",
+        en_top10: "Top 10%",
+        rank_nacional: "# Nac."
       },
       format: {
         rank_comuna: d => rankBadge(d),
@@ -171,12 +171,13 @@ if (escuelaPreseleccionada) {
         en_top10: (d, i, data) => top10Indicator(d, data[i].cantidad)
       },
       width: {
-        rank_nacional: 40,
-        rank_comuna: 60,
-        cantidad: 80,
-        prom_lect_mate: 80,
-        en_top10: 80,
-        dependencia: 110
+        rank_comuna: 40,
+        establecimiento: 160,
+        dependencia: 100,
+        prom_lect_mate: 70,
+        cantidad: 50,
+        en_top10: 60,
+        rank_nacional: 50
       },
       rows: 100,
       height: 'auto',
@@ -239,15 +240,15 @@ if (!escuelaPreseleccionada) {
   display(html`<p style="color: var(--datalized-gray-light); margin-bottom: 1rem;">Mostrando <strong>${escuelasFiltradas.length.toLocaleString()}</strong> de ${escuelas.length.toLocaleString()} establecimientos</p>`);
 
   display(Inputs.table(escuelasFiltradas, {
-    columns: ["rank_nacional", "establecimiento", "comuna", "region", "dependencia", "cantidad", "prom_lect_mate"],
+    columns: ["rank_nacional", "establecimiento", "dependencia", "prom_lect_mate", "comuna", "region", "cantidad"],
     header: {
       rank_nacional: "#",
       establecimiento: "Establecimiento",
+      dependencia: "Dependencia",
+      prom_lect_mate: "Prom. L+M",
       comuna: "Comuna",
       region: "Región",
-      dependencia: "Dependencia",
-      cantidad: "Est.",
-      prom_lect_mate: "Prom. L+M"
+      cantidad: "Est."
     },
     format: {
       rank_nacional: d => rankBadge(d),
@@ -256,13 +257,13 @@ if (!escuelaPreseleccionada) {
       prom_lect_mate: d => scoreValue(d)
     },
     width: {
-      rank_nacional: 50,
-      establecimiento: "auto",
-      comuna: 120,
-      region: 140,
-      dependencia: 130,
-      cantidad: 60,
-      prom_lect_mate: 80
+      rank_nacional: 40,
+      establecimiento: 180,
+      dependencia: 110,
+      prom_lect_mate: 80,
+      comuna: 100,
+      region: 120,
+      cantidad: 50
     },
     rows: 20,
     align: {

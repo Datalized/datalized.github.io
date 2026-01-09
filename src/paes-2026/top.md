@@ -86,9 +86,9 @@ const pctNoPagado = data.origen_top10
   <div class="plot-container">
     ${resize((width) => Plot.plot({
       width,
-      marginLeft: Math.min(200, width * 0.35),
+      marginLeft: Math.max(150, Math.min(200, width * 0.4)),
       height: 220,
-      style: {fontSize: "12px"},
+      style: {fontSize: width < 500 ? "10px" : "12px"},
       y: {label: null},
       x: {label: "Número de estudiantes"},
       marks: [
@@ -128,15 +128,15 @@ Ranking de establecimientos por **cantidad de estudiantes en Top 10%**. El “ra
 
 ```js
 Inputs.table(escuelasTop10.slice(0, 100), {
-  columns: ["rank_top10", "rank_nacional", "establecimiento", "dependencia", "comuna", "estudiantes_top10", "total_estudiantes"],
+  columns: ["rank_top10", "establecimiento", "dependencia", "estudiantes_top10", "comuna", "total_estudiantes", "rank_nacional"],
   header: {
-    rank_top10: "#Top10",
-    rank_nacional: "#",
+    rank_top10: "#",
     establecimiento: "Establecimiento",
     dependencia: "Dependencia",
+    estudiantes_top10: "Top 10%",
     comuna: "Comuna",
-    estudiantes_top10: "Est. 10%",
-    total_estudiantes: "Total Est."
+    total_estudiantes: "Total",
+    rank_nacional: "# Nac."
   },
   format: {
     rank_top10: d => rankBadge(d),
@@ -146,12 +146,13 @@ Inputs.table(escuelasTop10.slice(0, 100), {
   },
   align: rankingAlign,
   width: {
-    rank_top10: 60,
-    rank_nacional: 60,
-    estudiantes_top10: 80,
-    total_estudiantes: 80,
-    dependencia: 120,
-    comuna: 100
+    rank_top10: 40,
+    establecimiento: 180,
+    dependencia: 110,
+    estudiantes_top10: 70,
+    comuna: 100,
+    total_estudiantes: 60,
+    rank_nacional: 50
   },
   height: 'auto',
   select: false

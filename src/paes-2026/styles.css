@@ -623,4 +623,22 @@ table[class^="oi-"] tbody tr:hover {
     height: 1.75rem;
     font-size: 0.75rem;
   }
+
+  /* Tablas responsivas - nombre del establecimiento visible */
+  table[class^="oi-"] .school-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  /* Dependencia badge más compacto en móvil */
+  .dep-badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
