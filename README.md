@@ -12,8 +12,8 @@ Análisis de resultados de la **PAES** (Prueba de Acceso a la Educación Superio
 
 **Funcionalidades:**
 - **Ranking de Establecimientos**: Ordenar por promedio, cantidad de estudiantes o presencia en Top 10%
-- **El Top 10%**: ¿De dónde vienen los mejores estudiantes? Análisis por dependencia
-- **La Ficha**: Búsqueda individual de establecimientos con comparación comunal
+- **Top 10%**: ¿De dónde vienen los mejores estudiantes? Análisis por dependencia
+- **Ficha colegios**: Búsqueda individual de establecimientos con comparación comunal
 
 **Datos:**
 | Dataset | Registros | Descripción |

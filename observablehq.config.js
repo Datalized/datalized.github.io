@@ -10,9 +10,11 @@ export default {
             name: "PAES 2026",
             open: true,
             pages: [
-                { name: "Ranking", path: "/paes-2026/" },
-                { name: "El Top 10", path: "/paes-2026/top" },
-                { name: "La Ficha", path: "/paes-2026/ficha" }
+                { name: "Exploración", path: "/paes-2026/" },
+                { name: "Ranking", path: "/paes-2026/ranking" },
+                { name: "Top 10", path: "/paes-2026/top" },
+                { name: "Ficha colegios", path: "/paes-2026/ficha" },
+                { name: "Metodología", path: "/paes-2026/metodologia" }
             ]
         }
     ],
