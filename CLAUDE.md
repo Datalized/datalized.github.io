@@ -10,33 +10,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **PAES 2026** (`src/paes-2026/`) - Chilean university entrance exam results analysis
 
-## Directory Structure
-
-```
-├── raw-data/              # Raw data files (not in git)
-│   └── paes-2026/         # PAES 2026 source data
-├── notebooks/             # Jupyter notebooks for data processing
-│   └── paes-2026/
-│       └── raw-data.ipynb # Builds paes.duckdb from raw CSV files
-├── src/                   # Observable Framework source
-│   ├── index.md           # Main landing page
-│   └── paes-2026/         # PAES 2026 project
-│       ├── index.md       # Ranking page
-│       ├── top.md         # Top 10% analysis
-│       ├── ficha.md       # School search
-│       ├── data/          # Python data loaders
-│       └── components/    # Reusable JS components
-├── paes.duckdb            # Built database (committed to git)
-└── observablehq.config.js # Observable Framework config
-```
-
 ## Commands
 
-### Observable Framework (JavaScript)
-
 ```bash
-# Install Node dependencies
-npm install
+# Install dependencies
+npm install && uv sync
 
 # Development server (localhost:3000)
 npm run dev
@@ -44,159 +22,92 @@ npm run dev
 # Build static site to dist/
 npm run build
 
-# Clean data loader cache
-rm -rf .observablehq/cache/
+# Clean build artifacts and cache
+npm run clean
+
+# Regenerate PAES database from raw data
+uv run jupyter execute notebooks/paes-2026/raw-data.ipynb
 ```
 
 Note: `npm run dev/build` automatically uses the uv virtualenv via `PATH=.venv/bin:$PATH` in package.json, so Python data loaders can import duckdb.
 
-### Python (Data Processing)
+## Architecture
 
-```bash
-# Install Python dependencies
-uv sync
-
-# Regenerate PAES database from raw data
-uv run jupyter execute notebooks/paes-2026/raw-data.ipynb
-
-# Add new Python dependencies
-uv add <package-name>
 ```
+├── raw-data/              # Raw CSV/Excel files (not in git)
+├── notebooks/             # Jupyter notebooks → build DuckDB
+│   └── paes-2026/raw-data.ipynb
+├── paes.duckdb            # Built database (committed to git)
+├── src/                   # Observable Framework source
+│   └── paes-2026/
+│       ├── data/*.py      # Python data loaders → JSON at build time
+│       └── components/    # Reusable JS modules
+└── dist/                  # Built static site (not in git)
+```
+
+**Data flow**: `raw-data/` → Notebook → `paes.duckdb` → Data loaders → JSON → Observable pages
 
 ## PAES 2026 Project
 
 ### Database (paes.duckdb)
 
-Read-only DuckDB database with main tables:
-- `resultados_paes` (306K rows) - Student exam scores with columns: `lectora_reg`, `mate1_reg`, `mate2_reg`, `historia_reg`, `ciencias_reg` for current scores, plus `*_inv` variants for winter tests and `*_ant` for previous year
-- `establecimientos` (12K rows) - Schools from MINEDUC directory with `rbd` as primary key, includes:
-  - Geographic coordinates: `latitud`, `longitud`
-  - Enrollment by level: `mat_parvulario`, `mat_basica`, `mat_media_hc`, `mat_media_tp`, `mat_total`
-  - Administrative info: `cod_depe`, `cod_depe2`, `rural`, `convenio_pie`, `pace`
+Main tables:
+- `resultados_paes` (306K rows) - Student exam scores: `lectora_reg`, `mate1_reg`, `mate2_reg`, `historia_reg`, `ciencias_reg` (plus `*_inv` for winter tests, `*_ant` for previous year)
+- `establecimientos` (12K rows) - Schools with `rbd` primary key, includes: `latitud`/`longitud`, enrollment (`mat_parvulario`, `mat_basica`, `mat_media_hc`, `mat_media_tp`, `mat_total`), admin (`cod_depe`, `cod_depe2`, `rural`, `convenio_pie`, `pace`)
 - `comunas` (346 rows) - Geographic hierarchy: comuna → provincia → región
 
 Reference tables: `ref_dependencia`, `ref_dependencia_mineduc`, `ref_dependencia_mineduc2`, `ref_rama`, `ref_situacion_egreso`, `ref_modulo_ciencias`, `ref_orientacion_religiosa`, `ref_estado_establecimiento`, `cod_ensenanza`
 
+### Key Query Patterns
+
+**Official DEMRE filter** (used in all data loaders):
+```sql
+WHERE r.puntaje_nem > 0 AND r.puntaje_ranking > 0
+  AND r.mate1_reg > 0 AND r.lectora_reg > 0
+  AND r.rindio_anterior = false AND r.situacion_egreso = 1
+```
+
+**Statistical significance**: `HAVING COUNT(*) >= 5` (minimum students per school)
+
+**Score conversions**: Spanish comma decimals converted with `REPLACE` and `NULLIF` during import
+
+**Region ordering**: North-to-south geographic mapping via `ORDEN_REGIONES` dict
+
 ### Data Loaders
 
-Located in `src/paes-2026/data/` (Python scripts that query DuckDB at build time):
-- `escuelas-ranking.json.py` - School rankings with metrics
-- `brechas-top10.json.py` - Top 10% analysis data
-- `filtros.json.py` - Filter options for selectors
-
-### Raw Data Sources
-
-Located in `raw-data/paes-2026/`:
-- `ArchivoC_Adm2026REG.csv` - Raw PAES results (50 MB)
-- `Libro_CódigosADM2026_ArchivoC.xlsx` - MINEDUC codebook
-- `20250926_Directorio_Oficial_EE_2025_*.csv` - MINEDUC Official School Directory
+Located in `src/paes-2026/data/`:
+- `escuelas-ranking.json.py` - School rankings with percentiles and Top 10% counts
+- `brechas-top10.json.py` - Top 10% analysis by dependency type
+- `filtros.json.py` - Filter options for UI selectors
 
 ## Deployment
 
-### Observable Framework (GitHub Pages / public.datalized.cl)
-
-- Run `npm run build` to generate static files in `dist/`
+- GitHub Actions workflow builds on push to main → GitHub Pages
 - Data loaders execute at build time, generating JSON from DuckDB
-- `paes.duckdb` must be committed to git (excluded from .gitignore via negation)
-- After regenerating database with notebook, commit the new `paes.duckdb`
-
-## Key Patterns
-
-- Institution queries use `HAVING COUNT(*) >= 5` to filter for statistical significance
-- Score columns use Spanish comma decimals, converted during import with `REPLACE` and `NULLIF`
-- Official filters for matching DEMRE statistics: `puntaje_nem > 0`, `rindio_anterior = false`, `situacion_egreso = 1`
-- All database queries are read-only; modifications go through the notebook pipeline
-- Region ordering uses north-to-south geographic mapping (dict `ORDEN_REGIONES`)
+- `paes.duckdb` must be committed (negated in .gitignore)
+- After regenerating database, commit the new `paes.duckdb`
 
 ## Observable Framework Reference
 
 Full documentation: [`docs/observable.md`](docs/observable.md)
 
-### Markdown Pages
+### Quick Reference
 
-**Front matter** (YAML at top of `.md` files):
-```yaml
----
-title: Página de ejemplo
-toc: false
-theme: dashboard
----
+**Data loading**:
+```js
+const data = FileAttachment("paes-2026/data/escuelas-ranking.json").json();
 ```
 
-**Layouts** - Use CSS grid classes for dashboards:
+**Reactive inputs**:
+```js
+const region = view(Inputs.select(regiones, {label: "Región:", value: "Metropolitana"}));
+```
+
+**Dashboard layouts**:
 ```html
 <div class="grid grid-cols-4">
   <div class="card"><h2>Título</h2>Contenido</div>
 </div>
 ```
-- Grid classes: `grid-cols-2`, `grid-cols-3`, `grid-cols-4`
-- Span classes: `grid-colspan-2`, `grid-rowspan-2`
 
-### JavaScript in Markdown
-
-**Code blocks** (display implícito sin `;`):
-```js
-Plot.barY(data, {x: "category", y: "value"}).plot()
-```
-
-**Inline expressions**:
-```markdown
-El total es ${data.length.toLocaleString("es-CL")} registros.
-```
-
-**Display explícito**:
-```js
-const result = await fetch("data.json");
-display(result);
-```
-
-### Data Loading
-
-**FileAttachment** (para archivos en `src/`):
-```js
-const data = FileAttachment("paes-2026/data/escuelas-ranking.json").json();
-```
-
-**Data loaders** output to stdout, cached in `.observablehq/cache/`:
-```python
-# src/paes-2026/data/example.json.py
-import json
-print(json.dumps({"key": "value"}))
-```
-
-### Reactivity
-
-**Inputs** - Create reactive UI elements:
-```js
-const region = view(Inputs.select(regiones, {label: "Región:", value: "Metropolitana"}));
-```
-
-**Generators** - For reactive values:
-```js
-const searchInput = Inputs.text({placeholder: "Buscar..."});
-const search = Generators.input(searchInput);
-```
-
-**Built-in reactive variables**: `now` (timestamp), `width` (viewport width)
-
-### Observable Plot
-
-```js
-// Bar chart
-Plot.barY(data, {x: "nombre", y: "puntaje", fill: "dependencia"}).plot()
-
-// Line chart with grid
-Plot.lineY(data, {x: "fecha", y: "valor"}).plot({y: {grid: true}})
-
-// Responsive chart
-Plot.barX(data, {y: "label", x: "value"}).plot({width})
-```
-
-### Theme Variables
-
-Use CSS custom properties for consistent styling:
-```js
-Plot.dot(data, {fill: "var(--theme-foreground-focus)"})
-```
-
-Available: `--theme-foreground`, `--theme-background`, `--theme-foreground-focus`, `--theme-foreground-muted`
+**Theme variables**: `--theme-foreground`, `--theme-background`, `--theme-foreground-focus`, `--theme-foreground-muted`
