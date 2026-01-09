@@ -67,7 +67,7 @@ Para calcular rankings y estadísticas, aplicamos los **criterios oficiales del 
 
 ### Filtro principal (WHERE_OFICIAL)
 
-```sql
+```sql run=false
 WHERE puntaje_nem > 0          -- Tiene NEM válido
   AND puntaje_ranking > 0      -- Tiene ranking válido
   AND mate1_reg > 0            -- Rindió Matemática 1
@@ -88,7 +88,7 @@ WHERE puntaje_nem > 0          -- Tiene NEM válido
 
 Para rankings de establecimientos:
 
-```sql
+```sql run=false
 HAVING COUNT(*) >= 5  -- Mínimo 5 estudiantes por establecimiento
 ```
 
@@ -98,7 +98,7 @@ Esto evita que colegios con muy pocos postulantes aparezcan en posiciones extrem
 
 El umbral del **Top 10%** se calcula sobre el promedio de Competencia Lectora y Matemática 1:
 
-```sql
+```sql run=false
 PERCENTILE_CONT(0.9) WITHIN GROUP (
   ORDER BY (lectora_reg + mate1_reg) / 2
 )

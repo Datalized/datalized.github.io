@@ -255,11 +255,11 @@ const datosFiltrados = data.distribucion_dependencia.filter(d => d.prueba === pr
       <div class="plot-container">
         ${resize((width) => Plot.plot({
           width,
-          marginLeft: Math.min(180, width * 0.45),
+          marginLeft: Math.min(200, width * 0.45),
           marginRight: 50,
           height: 200,
           style: {fontSize: "12px"},
-          x: {label: "Puntaje promedio", domain: [350, 800]},
+          x: {label: "Puntaje promedio"},
           y: {label: null},
           marks: [
             Plot.barX(datosFiltrados, {
@@ -333,11 +333,11 @@ const ramaData = data.distribucion_rama.map(d => ({
       <div class="plot-container">
         ${resize((width) => Plot.plot({
           width,
-          marginLeft: Math.min(160, width * 0.4),
+          marginLeft: Math.min(180, width * 0.45),
           marginRight: 50,
           height: 160,
           style: {fontSize: "12px"},
-          x: {label: ramaMetrica, domain: [500, 700]},
+          x: {label: ramaMetrica},
           y: {label: null},
           marks: [
             Plot.barX(ramaData, {

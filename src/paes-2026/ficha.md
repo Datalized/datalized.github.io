@@ -11,16 +11,12 @@ head: |
   <meta property="og:type" content="website">
 ---
 
-# Ficha colegios: Buscar Establecimiento
-
-Busca cualquier establecimiento educacional y explora su desempeño en la PAES 2026. Aquí encontrarás métricas clave como promedios por prueba, distribución de puntajes y posición en rankings nacionales y comunales.
-
-Utiliza el buscador para encontrar tu colegio, liceo o escuela de interés.
-
 ```js
 const escuelas = FileAttachment("data/escuelas-ranking.json").json();
 import { rankBadge, depBadge, scoreValue, top10Indicator, rankingAlign } from "./components/tableFormatters.js";
+```
 
+```js
 const colores = {
   'Particular Pagado': '#E63946',
   'Particular Subvencionado': '#457B9D',
@@ -28,38 +24,30 @@ const colores = {
   'Serv. Local Educación': '#E9C46A',
   'Corp. Administración Delegada': '#9B5DE5'
 };
-```
 
-<div class="filters">
-
-```js
-// Crear opciones para el datalist
-const opciones = escuelas.map(d => `${d.establecimiento} - ${d.comuna}`);
-
-const busquedaTexto = view(Inputs.text({
-  placeholder: "Escribe el nombre del establecimiento...",
-  datalist: opciones,
-  label: "Buscar establecimiento"
-}));
-```
-
-</div>
-
-```js
-// Buscar la escuela que coincide con el texto
-const escuelaSeleccionada = escuelas.find(d =>
-  `${d.establecimiento} - ${d.comuna}` === busquedaTexto
-);
+// Leer parámetro RBD de la URL (después de que escuelas esté cargado)
+const urlParams = new URLSearchParams(window.location.search);
+const rbdParam = urlParams.get('rbd');
+const rbdSeleccionado = rbdParam ? parseInt(rbdParam) : null;
+const escuelaPreseleccionada = rbdSeleccionado ? escuelas.find(d => d.rbd === rbdSeleccionado) : null;
 ```
 
 ```js
-if (escuelaSeleccionada) {
-  const e = escuelaSeleccionada;
+// Si hay una escuela preseleccionada, mostrar su ficha
+if (escuelaPreseleccionada) {
+  const e = escuelaPreseleccionada;
+
+  display(html`
+    <nav style="margin-bottom: 1rem; font-size: 0.875rem;">
+      <a href="./ficha" style="color: var(--datalized-teal);">← Volver al directorio</a>
+    </nav>
+  `);
 
   display(html`
     <div class="school-header" style="border-left: 4px solid ${colores[e.dependencia]}">
-      <h2>${e.establecimiento}</h2>
+      <h1 style="margin-bottom: 0.5rem; font-size: 1.75rem;">${e.establecimiento}</h1>
       <div class="school-meta">
+        <span><strong>RBD:</strong> ${e.rbd}</span>
         <span><strong>Comuna:</strong> ${e.comuna}</span>
         <span><strong>Región:</strong> ${e.region}</span>
         <span><strong>Dependencia:</strong> ${e.dependencia}</span>
@@ -68,7 +56,7 @@ if (escuelaSeleccionada) {
     </div>
   `);
 
-  display(html`<h3 class="section-title">Promedios por Prueba</h3>`);
+  display(html`<h2 class="section-title">Promedios por Prueba</h2>`);
   display(html`<p>Los promedios de puntajes obtenidos por los estudiantes del establecimiento en las pruebas obligatorias. El promedio Lectora + Matemática (L+M) es el indicador principal utilizado para el ranking.</p>`);
 
   display(html`
@@ -77,6 +65,10 @@ if (escuelaSeleccionada) {
         <h3>Ranking Nacional</h3>
         <span class="value">#${e.rank_nacional}</span>
         <small>de ${escuelas.length.toLocaleString()}</small>
+      </div>
+      <div class="stat-card">
+        <h3>Ranking Comunal</h3>
+        <span class="value">#${e.rank_comuna}</span>
       </div>
       <div class="stat-card">
         <h3>Prom. Lectora</h3>
@@ -93,7 +85,7 @@ if (escuelaSeleccionada) {
     </div>
   `);
 
-  display(html`<h3 class="section-title">Distribución de Puntajes</h3>`);
+  display(html`<h2 class="section-title">Distribución de Puntajes</h2>`);
   display(html`<p>La distribución de puntajes muestra cómo varían los resultados dentro del establecimiento. El percentil 25 indica que el 25% de estudiantes obtuvo ese puntaje o menos, la mediana (percentil 50) representa el valor central, y el percentil 75 muestra que el 75% obtuvo ese puntaje o menos.</p>`);
 
   display(html`
@@ -123,8 +115,8 @@ if (escuelaSeleccionada) {
     .slice(0, 10);
 
   if (cercanas.length > 0) {
-    display(html`<h3 class="section-title">Comparación con otros establecimientos en ${e.comuna}</h3>`);
-    display(html`<p>Este gráfico compara el promedio Lectora + Matemática del establecimiento seleccionado (destacado en color oscuro) con otros establecimientos de la misma comuna. Permite visualizar el posicionamiento relativo dentro del contexto comunal.</p>`);
+    display(html`<h2 class="section-title">Comparación con otros establecimientos en ${e.comuna}</h2>`);
+    display(html`<p>Este gráfico compara el promedio Lectora + Matemática del establecimiento seleccionado (destacado en color verde) con otros establecimientos de la misma comuna.</p>`);
 
     const comparacion = [e, ...cercanas];
     display(html`
@@ -154,10 +146,11 @@ if (escuelaSeleccionada) {
             ]
           }))}
         </div>
-        <figcaption><strong>Figura 1:</strong> Comparación de promedios Lectora + Matemática con establecimientos de la misma comuna (barra verde = establecimiento seleccionado)</figcaption>
+        <figcaption><strong>Figura 1:</strong> Comparación de promedios Lectora + Matemática con establecimientos de la misma comuna (barra verde = establecimiento actual)</figcaption>
       </figure>
     `);
 
+    display(html`<h3>Tabla comparativa</h3>`);
     display(Inputs.table(comparacion.sort((a, b) => b.prom_lect_mate - a.prom_lect_mate), {
       columns: ["rank_nacional", "rank_comuna", "establecimiento", "dependencia", "cantidad", "prom_lect_mate", "en_top10"],
       header: {
@@ -172,10 +165,10 @@ if (escuelaSeleccionada) {
       format: {
         rank_comuna: d => rankBadge(d),
         rank_nacional: d => rankBadge(d),
-        establecimiento: d => html`<span class="school-name">${d}</span>`,
+        establecimiento: (d, i, data) => html`<a href="?rbd=${data[i].rbd}" class="school-name" style="color: var(--datalized-teal);">${d}</a>`,
         dependencia: d => depBadge(d),
         prom_lect_mate: d => d,
-        en_top10: (d, i, data) => data[i].cantidad
+        en_top10: (d, i, data) => top10Indicator(d, data[i].cantidad)
       },
       width: {
         rank_nacional: 40,
@@ -183,8 +176,7 @@ if (escuelaSeleccionada) {
         cantidad: 80,
         prom_lect_mate: 80,
         en_top10: 80,
-        dependencia: 110,
-        comuna: 100
+        dependencia: 110
       },
       rows: 100,
       height: 'auto',
@@ -192,5 +184,93 @@ if (escuelaSeleccionada) {
       select: false
     }));
   }
+}
+```
+
+```js
+// Si no hay escuela preseleccionada, mostrar el directorio
+if (!escuelaPreseleccionada) {
+  display(html`<h1>Directorio de Establecimientos</h1>`);
+  display(html`<p>Busca cualquier establecimiento educacional y accede a su ficha detallada con desempeño en la PAES 2026. Haz clic en el nombre del establecimiento para ver promedios por prueba, distribución de puntajes y comparación comunal.</p>`);
+}
+```
+
+```js
+const regiones = ["Todas", ...new Set(escuelas.map(d => d.region).filter(Boolean).sort())];
+const dependencias = ["Todas", ...new Set(escuelas.map(d => d.dependencia).filter(Boolean).sort())];
+```
+
+<div class="filters">
+
+```js
+const busquedaTexto = escuelaPreseleccionada ? "" : view(Inputs.text({
+  placeholder: "Escribe el nombre del establecimiento...",
+  label: "Buscar"
+}));
+```
+
+```js
+const regionSeleccionada = escuelaPreseleccionada ? "Todas" : view(Inputs.select(regiones, {
+  label: "Región",
+  value: "Todas"
+}));
+```
+
+```js
+const dependenciaSeleccionada = escuelaPreseleccionada ? "Todas" : view(Inputs.select(dependencias, {
+  label: "Dependencia",
+  value: "Todas"
+}));
+```
+
+</div>
+
+```js
+if (!escuelaPreseleccionada) {
+  const escuelasFiltradas = escuelas.filter(d => {
+    const matchBusqueda = !busquedaTexto ||
+      d.establecimiento.toLowerCase().includes(busquedaTexto.toLowerCase()) ||
+      d.comuna?.toLowerCase().includes(busquedaTexto.toLowerCase());
+    const matchRegion = regionSeleccionada === "Todas" || d.region === regionSeleccionada;
+    const matchDependencia = dependenciaSeleccionada === "Todas" || d.dependencia === dependenciaSeleccionada;
+    return matchBusqueda && matchRegion && matchDependencia;
+  });
+
+  display(html`<p style="color: var(--datalized-gray-light); margin-bottom: 1rem;">Mostrando <strong>${escuelasFiltradas.length.toLocaleString()}</strong> de ${escuelas.length.toLocaleString()} establecimientos</p>`);
+
+  display(Inputs.table(escuelasFiltradas, {
+    columns: ["rank_nacional", "establecimiento", "comuna", "region", "dependencia", "cantidad", "prom_lect_mate"],
+    header: {
+      rank_nacional: "#",
+      establecimiento: "Establecimiento",
+      comuna: "Comuna",
+      region: "Región",
+      dependencia: "Dependencia",
+      cantidad: "Est.",
+      prom_lect_mate: "Prom. L+M"
+    },
+    format: {
+      rank_nacional: d => rankBadge(d),
+      establecimiento: (d, i, data) => html`<a href="?rbd=${data[i].rbd}" class="school-name" style="text-decoration: none; color: var(--datalized-teal);">${d}</a>`,
+      dependencia: d => depBadge(d),
+      prom_lect_mate: d => scoreValue(d)
+    },
+    width: {
+      rank_nacional: 50,
+      establecimiento: "auto",
+      comuna: 120,
+      region: 140,
+      dependencia: 130,
+      cantidad: 60,
+      prom_lect_mate: 80
+    },
+    rows: 20,
+    align: {
+      rank_nacional: "center",
+      cantidad: "right",
+      prom_lect_mate: "right"
+    },
+    select: false
+  }));
 }
 ```
