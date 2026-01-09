@@ -2,6 +2,13 @@
 title: El Top 10 - Top 10%
 toc: false
 style: styles.css
+head: |
+  <link rel="canonical" href="https://public.datalized.cl/paes-2026/top">
+  <meta name="description" content="Análisis del Top 10% de puntajes PAES 2026. Descubre de qué tipos de establecimientos provienen los mejores resultados.">
+  <meta property="og:title" content="PAES 2026 - El Top 10%">
+  <meta property="og:description" content="Análisis del Top 10% de puntajes PAES 2026 por tipo de establecimiento.">
+  <meta property="og:url" content="https://public.datalized.cl/paes-2026/top">
+  <meta property="og:type" content="website">
 ---
 
 # El Top 10

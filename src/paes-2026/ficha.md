@@ -2,6 +2,13 @@
 title: La Ficha - Buscar Establecimiento
 toc: false
 style: styles.css
+head: |
+  <link rel="canonical" href="https://public.datalized.cl/paes-2026/ficha">
+  <meta name="description" content="Busca cualquier establecimiento educacional y explora su desempeño en la PAES 2026. Promedios, distribución de puntajes y comparación comunal.">
+  <meta property="og:title" content="PAES 2026 - La Ficha">
+  <meta property="og:description" content="Busca y compara el desempeño de establecimientos en la PAES 2026.">
+  <meta property="og:url" content="https://public.datalized.cl/paes-2026/ficha">
+  <meta property="og:type" content="website">
 ---
 
 # La Ficha: Buscar Establecimiento

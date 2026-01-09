@@ -2,6 +2,13 @@
 title: PAES 2026 - Ranking
 toc: true
 style: styles.css
+head: |
+  <link rel="canonical" href="https://public.datalized.cl/paes-2026/">
+  <meta name="description" content="Ranking de establecimientos educacionales chilenos según resultados PAES 2026. Filtra por región, comuna y dependencia.">
+  <meta property="og:title" content="PAES 2026 - Ranking de Establecimientos">
+  <meta property="og:description" content="Ranking de establecimientos educacionales chilenos según resultados PAES 2026.">
+  <meta property="og:url" content="https://public.datalized.cl/paes-2026/">
+  <meta property="og:type" content="website">
 ---
 
 # Ranking de Establecimientos

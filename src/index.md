@@ -2,6 +2,13 @@
 title: Datalized Public
 toc: false
 style: index-styles.css
+head: |
+  <link rel="canonical" href="https://public.datalized.cl/">
+  <meta name="description" content="Datos públicos de Chile, visualizados y analizados. Exploraciones interactivas de información oficial para entender mejor nuestro país.">
+  <meta property="og:title" content="Datalized Public">
+  <meta property="og:description" content="Datos públicos de Chile, visualizados y analizados.">
+  <meta property="og:url" content="https://public.datalized.cl/">
+  <meta property="og:type" content="website">
 ---
 
 <div class="hero">
