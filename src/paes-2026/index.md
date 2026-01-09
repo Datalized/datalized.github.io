@@ -92,15 +92,15 @@ const colores = {
 Inputs.table(data.stats_pruebas, {
   columns: ["prueba", "n", "promedio", "desviacion", "p25", "mediana", "p75", "p90", "puntaje_maximo"],
   header: {
-    prueba: "Prueba",
-    n: "Rindieron",
-    promedio: "Promedio",
-    desviacion: "Desv. Est.",
-    p25: "P25",
-    mediana: "Mediana",
-    p75: "P75",
-    p90: "P90",
-    puntaje_maximo: "Con 1000 pts"
+    prueba: html`<span title="Nombre de la prueba PAES">Prueba</span>`,
+    n: html`<span title="Cantidad de estudiantes que rindieron la prueba">Rindieron</span>`,
+    promedio: html`<span title="Puntaje promedio obtenido">Promedio</span>`,
+    desviacion: html`<span title="Desviación estándar de los puntajes">Desv. Est.</span>`,
+    p25: html`<span title="Percentil 25: 25% obtuvo este puntaje o menos">P25</span>`,
+    mediana: html`<span title="Percentil 50: valor central de la distribución">Mediana</span>`,
+    p75: html`<span title="Percentil 75: 75% obtuvo este puntaje o menos">P75</span>`,
+    p90: html`<span title="Percentil 90: umbral del Top 10%">P90</span>`,
+    puntaje_maximo: html`<span title="Estudiantes que obtuvieron puntaje nacional (1000 pts)">Con 1000 pts</span>`
   },
   format: {
     n: d => d.toLocaleString("es-CL"),
@@ -159,10 +159,10 @@ Inputs.table(data.stats_pruebas, {
     ${Inputs.table(data.puntajes_maximos, {
       columns: ["prueba", "total", "con_1000", "pct"],
       header: {
-        prueba: "Prueba",
-        total: "Rindieron",
-        con_1000: "Con 1000",
-        pct: "% del total"
+        prueba: html`<span title="Nombre de la prueba PAES">Prueba</span>`,
+        total: html`<span title="Cantidad de estudiantes que rindieron la prueba">Rindieron</span>`,
+        con_1000: html`<span title="Estudiantes con puntaje nacional (1000 pts)">Con 1000</span>`,
+        pct: html`<span title="Porcentaje que obtuvo puntaje nacional">% del total</span>`
       },
       format: {
         total: d => d.toLocaleString("es-CL"),
@@ -295,11 +295,11 @@ const datosFiltrados = data.distribucion_dependencia.filter(d => d.prueba === pr
     ${Inputs.table(datosFiltrados, {
       columns: ["dependencia", "n", "promedio", "mediana", "desviacion"],
       header: {
-        dependencia: "Dependencia",
-        n: "Postulantes",
-        promedio: "Prom.",
-        mediana: "Mediana",
-        desviacion: "Desv."
+        dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
+        n: html`<span title="Cantidad de estudiantes que rindieron">Rindieron</span>`,
+        promedio: html`<span title="Puntaje promedio obtenido">Promedio</span>`,
+        mediana: html`<span title="Percentil 50: valor central">Mediana</span>`,
+        desviacion: html`<span title="Desviación estándar">Desv. Est.</span>`
       },
       format: {
         n: d => d.toLocaleString("es-CL")
@@ -368,10 +368,10 @@ const ramaData = data.distribucion_rama.map(d => ({
     ${Inputs.table(data.distribucion_rama, {
       columns: ["rama", "n", "prom_lectora", "prom_mate1"],
       header: {
-        rama: "Rama",
-        n: "Postulantes",
-        prom_lectora: "Lectora",
-        prom_mate1: "Mate 1"
+        rama: html`<span title="Rama educacional del establecimiento">Rama</span>`,
+        n: html`<span title="Cantidad de estudiantes que rindieron">Rindieron</span>`,
+        prom_lectora: html`<span title="Promedio en Competencia Lectora">Prom. Lectora</span>`,
+        prom_mate1: html`<span title="Promedio en Matemática 1">Prom. Mate 1</span>`
       },
       format: {
         n: d => d.toLocaleString("es-CL")

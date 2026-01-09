@@ -74,7 +74,7 @@ Inputs.table(datos, {
     rank_nacional: html`<span title="Ranking nacional por promedio Lectora + Matemática">#</span>`,
     establecimiento: html`<span title="Nombre del establecimiento educacional">Establecimiento</span>`,
     dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
-    prom_lect_mate: html`<span title="Promedio de puntajes en Competencia Lectora y Matemática 1">Prom. L+M</span>`,
+    prom_lect_mate: html`<span title="Promedio en Competencia Lectora y Matemática 1">Prom. L+M</span>`,
     comuna: html`<span title="Comuna donde se ubica el establecimiento">Comuna</span>`,
     cantidad: html`<span title="Cantidad de estudiantes que rindieron la PAES">Est.</span>`,
     en_top10: html`<span title="Estudiantes en el Top 10% nacional">Top 10%</span>`,
