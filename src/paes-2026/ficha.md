@@ -15,6 +15,7 @@ head: |
 const escuelas = FileAttachment("data/escuelas-ranking.json").json();
 const filtros = FileAttachment("data/filtros.json").json();
 import { rankBadge, depBadge, scoreValue, top10Indicator, rankingAlign } from "./components/tableFormatters.js";
+import { statsGrid } from "./components/statCard.js";
 ```
 
 ```js
@@ -60,56 +61,23 @@ if (escuelaPreseleccionada) {
   display(html`<h2 class="section-title">Promedios por Prueba</h2>`);
   display(html`<p>Los promedios de puntajes obtenidos por los estudiantes del establecimiento en las pruebas obligatorias. El promedio Lectora + Matemática (L+M) es el indicador principal utilizado para el ranking.</p>`);
 
-  display(html`
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3>Ranking Nacional</h3>
-        <span class="value">#${e.rank_nacional}</span>
-        <small>de ${escuelas.length.toLocaleString()}</small>
-      </div>
-      <div class="stat-card">
-        <h3>Ranking Comunal</h3>
-        <span class="value">#${e.rank_comuna}</span>
-      </div>
-      <div class="stat-card">
-        <h3>Prom. Lectora</h3>
-        <span class="value">${e.prom_lectora}</span>
-      </div>
-      <div class="stat-card">
-        <h3>Prom. Mate 1</h3>
-        <span class="value">${e.prom_mate1}</span>
-      </div>
-      <div class="stat-card">
-        <h3>Prom. L+M</h3>
-        <span class="value highlight">${e.prom_lect_mate}</span>
-      </div>
-    </div>
-  `);
+  display(statsGrid([
+    { title: "Ranking Nacional", value: `#${e.rank_nacional}`, subtitle: `de ${escuelas.length.toLocaleString()}` },
+    { title: "Ranking Comunal", value: `#${e.rank_comuna}` },
+    { title: "Prom. Lectora", value: e.prom_lectora },
+    { title: "Prom. Mate 1", value: e.prom_mate1 },
+    { title: "Prom. L+M", value: e.prom_lect_mate, highlight: true }
+  ]));
 
   display(html`<h2 class="section-title">Distribución de Puntajes</h2>`);
   display(html`<p>La distribución de puntajes muestra cómo varían los resultados dentro del establecimiento. El percentil 25 indica que el 25% de estudiantes obtuvo ese puntaje o menos, la mediana (percentil 50) representa el valor central, y el percentil 75 muestra que el 75% obtuvo ese puntaje o menos.</p>`);
 
-  display(html`
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3>Percentil 25</h3>
-        <span class="value">${e.p25}</span>
-      </div>
-      <div class="stat-card">
-        <h3>Mediana</h3>
-        <span class="value">${e.mediana}</span>
-      </div>
-      <div class="stat-card">
-        <h3>Percentil 75</h3>
-        <span class="value">${e.p75}</span>
-      </div>
-      <div class="stat-card">
-        <h3>En Top 10%</h3>
-        <span class="value">${e.en_top10}</span>
-        <small>${e.cantidad > 0 ? Math.round(e.en_top10 / e.cantidad * 100) : 0}%</small>
-      </div>
-    </div>
-  `);
+  display(statsGrid([
+    { title: "Percentil 25", value: e.p25 },
+    { title: "Mediana", value: e.mediana },
+    { title: "Percentil 75", value: e.p75 },
+    { title: "En Top 10%", value: e.en_top10, subtitle: `${e.cantidad > 0 ? Math.round(e.en_top10 / e.cantidad * 100) : 0}%` }
+  ]));
 
   const cercanas = escuelas
     .filter(x => x.comuna === e.comuna && x.rbd !== e.rbd)

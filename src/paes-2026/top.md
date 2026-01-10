@@ -21,6 +21,7 @@ Una mirada rápida a quiénes concentran el **Top 10%** de puntajes en la PAES y
 const data = FileAttachment("data/brechas-top10.json").json();
 const escuelasRanking = FileAttachment("data/escuelas-ranking.json").json();
 import { rankBadge, depBadge, rankingAlign } from "./components/tableFormatters.js";
+import { statsGrid } from "./components/statCard.js";
 
 const colores = {
   'Particular Pagado': '#E63946',
@@ -48,24 +49,14 @@ const totalColegiosTop10 = colegiosTop10Set.size;
 
 ```
 
-<div class="stats-grid">
-  <div class="stat-card">
-    <h2>Umbral Top 10%</h2>
-    <span class="value">${data.umbrales.p90} pts</span>
-  </div>
-  <div class="stat-card">
-    <h2>Umbral Top 20%</h2>
-    <span class="value">${data.umbrales.p80} pts</span>
-  </div>
-  <div class="stat-card">
-    <h2>Estudiantes en Top 10%</h2>
-    <span class="value">${data.total_top10.toLocaleString()}</span>
-  </div>
-  <div class="stat-card">
-    <h2>Colegios con estudiantes en Top 10%</h2>
-    <span class="value">${totalColegiosTop10.toLocaleString()}</span>
-  </div>
-</div>
+```js
+statsGrid([
+  { title: "Umbral Top 10%", value: `${data.umbrales.p90} pts`, level: "h2" },
+  { title: "Umbral Top 20%", value: `${data.umbrales.p80} pts`, level: "h2" },
+  { title: "Estudiantes en Top 10%", value: data.total_top10.toLocaleString(), level: "h2" },
+  { title: "Colegios con estudiantes en Top 10%", value: totalColegiosTop10.toLocaleString(), level: "h2" }
+])
+```
 
 ## Origen del Top 10% por Dependencia
 

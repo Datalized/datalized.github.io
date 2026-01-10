@@ -17,6 +17,7 @@ Una mirada general a los datos de la **PAES 2026** (Prueba de Acceso a la Educac
 
 ```js
 const data = FileAttachment("data/overview.json").json();
+import { statsGrid } from "./components/statCard.js";
 
 const colores = {
   'Particular Pagado': '#E63946',
@@ -29,26 +30,14 @@ const colores = {
 
 ## Indicadores Generales
 
-<div class="stats-grid">
-  <div class="stat-card">
-    <h2>Total Postulantes</h2>
-    <span class="value">${data.kpis.total_postulantes.toLocaleString("es-CL")}</span>
-  </div>
-  <div class="stat-card">
-    <h2>Establecimientos</h2>
-    <span class="value">${data.kpis.total_establecimientos.toLocaleString("es-CL")}</span>
-  </div>
-  <div class="stat-card">
-    <h2>Puntaje Máximo</h2>
-    <span class="value">1000</span>
-    <small>Escala 100-1000</small>
-  </div>
-  <div class="stat-card">
-    <h2>Pruebas Obligatorias</h2>
-    <span class="value">2</span>
-    <small>Lectora + Matemática 1</small>
-  </div>
-</div>
+```js
+statsGrid([
+  { title: "Total Postulantes", value: data.kpis.total_postulantes.toLocaleString("es-CL"), level: "h2" },
+  { title: "Establecimientos", value: data.kpis.total_establecimientos.toLocaleString("es-CL"), level: "h2" },
+  { title: "Puntaje Máximo", value: "1000", subtitle: "Escala 100-1000", level: "h2" },
+  { title: "Pruebas Obligatorias", value: "2", subtitle: "Lectora + Matemática 1", level: "h2" }
+])
+```
 
 ## Postulantes por Prueba
 
