@@ -87,10 +87,11 @@ const pctNoPagado = data.origen_top10
     ${resize((width) => Plot.plot({
       width,
       marginLeft: Math.max(150, Math.min(200, width * 0.4)),
+      marginRight: 70,
       height: 220,
       style: {fontSize: width < 500 ? "10px" : "12px"},
       y: {label: null},
-      x: {label: "Número de estudiantes"},
+      x: {axis: null},
       marks: [
         Plot.barX(data.origen_top10, {
           y: "dependencia",
@@ -107,13 +108,13 @@ const pctNoPagado = data.origen_top10
         Plot.text(data.origen_top10, {
           y: "dependencia",
           x: "estudiantes",
-          text: d => `${d.porcentaje}%`,
+          text: d => `${d.estudiantes.toLocaleString()}\n${d.porcentaje}%`,
           dx: 5,
           textAnchor: "start",
           fontSize: 11,
+          lineHeight: 1.2,
           fill: "currentColor"
-        }),
-        Plot.ruleX([0])
+        })
       ]
     }))}
   </div>

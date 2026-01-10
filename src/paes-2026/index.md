@@ -60,7 +60,7 @@ const colores = {
       marginRight: 60,
       height: 200,
       style: {fontSize: "12px"},
-      x: {label: "Postulantes", tickFormat: "s"},
+      x: {axis: null},
       y: {label: null},
       marks: [
         Plot.barX(data.postulantes_por_prueba, {
@@ -78,8 +78,7 @@ const colores = {
           textAnchor: "start",
           fontSize: 11,
           fill: "currentColor"
-        }),
-        Plot.ruleX([0])
+        })
       ]
     }))}
   </div>
@@ -128,7 +127,7 @@ Inputs.table(data.stats_pruebas, {
           marginRight: 80,
           height: 200,
           style: {fontSize: "12px"},
-          x: {label: "Estudiantes con puntaje 1000"},
+          x: {axis: null},
           y: {label: null},
           marks: [
             Plot.barX(data.puntajes_maximos.filter(d => d.con_1000 > 0), {
@@ -146,8 +145,7 @@ Inputs.table(data.stats_pruebas, {
               textAnchor: "start",
               fontSize: 10,
               fill: "currentColor"
-            }),
-            Plot.ruleX([0])
+            })
           ]
         }))}
       </div>
@@ -259,7 +257,7 @@ const datosFiltrados = data.distribucion_dependencia.filter(d => d.prueba === pr
           marginRight: 50,
           height: 200,
           style: {fontSize: "12px"},
-          x: {label: "Puntaje promedio"},
+          x: {axis: null},
           y: {label: null},
           marks: [
             Plot.barX(datosFiltrados, {
@@ -282,8 +280,7 @@ const datosFiltrados = data.distribucion_dependencia.filter(d => d.prueba === pr
               textAnchor: "start",
               fontSize: 11,
               fill: "currentColor"
-            }),
-            Plot.ruleX([0])
+            })
           ]
         }))}
       </div>
@@ -337,7 +334,7 @@ const ramaData = data.distribucion_rama.map(d => ({
           marginRight: 50,
           height: 160,
           style: {fontSize: "12px"},
-          x: {label: ramaMetrica},
+          x: {axis: null},
           y: {label: null},
           marks: [
             Plot.barX(ramaData, {
@@ -355,8 +352,7 @@ const ramaData = data.distribucion_rama.map(d => ({
               textAnchor: "start",
               fontSize: 11,
               fill: "currentColor"
-            }),
-            Plot.ruleX([0])
+            })
           ]
         }))}
       </div>

@@ -13,6 +13,7 @@ head: |
 
 ```js
 const escuelas = FileAttachment("data/escuelas-ranking.json").json();
+const filtros = FileAttachment("data/filtros.json").json();
 import { rankBadge, depBadge, scoreValue, top10Indicator, rankingAlign } from "./components/tableFormatters.js";
 ```
 
@@ -125,10 +126,11 @@ if (escuelaPreseleccionada) {
           ${resize((width) => Plot.plot({
             width,
             marginLeft: Math.min(250, width * 0.4),
+            marginRight: 50,
             height: Math.max(280, comparacion.length * 28),
             style: {fontSize: "11px"},
             y: {label: null},
-            x: {label: "Promedio Lectora + Matemática", grid: true},
+            x: {axis: null},
             marks: [
               Plot.barX(comparacion, {
                 y: "establecimiento",
@@ -142,7 +144,15 @@ if (escuelaPreseleccionada) {
                   }
                 }
               }),
-              Plot.ruleX([0])
+              Plot.text(comparacion, {
+                y: "establecimiento",
+                x: "prom_lect_mate",
+                text: d => d.prom_lect_mate,
+                dx: 5,
+                textAnchor: "start",
+                fontSize: 10,
+                fill: "currentColor"
+              })
             ]
           }))}
         </div>
@@ -196,11 +206,6 @@ if (!escuelaPreseleccionada) {
 }
 ```
 
-```js
-const regiones = ["Todas", ...new Set(escuelas.map(d => d.region).filter(Boolean).sort())];
-const dependencias = ["Todas", ...new Set(escuelas.map(d => d.dependencia).filter(Boolean).sort())];
-```
-
 <div class="filters">
 
 ```js
@@ -208,20 +213,16 @@ const busquedaTexto = escuelaPreseleccionada ? "" : view(Inputs.text({
   placeholder: "Escribe el nombre del establecimiento...",
   label: "Buscar"
 }));
-```
 
-```js
-const regionSeleccionada = escuelaPreseleccionada ? "Todas" : view(Inputs.select(regiones, {
-  label: "Región",
-  value: "Todas"
-}));
-```
+const regionSel = escuelaPreseleccionada ? null : view(Inputs.select(
+  [null, ...filtros.regiones],
+  {label: "Región", format: d => d ? d.nombre : "Todas"}
+));
 
-```js
-const dependenciaSeleccionada = escuelaPreseleccionada ? "Todas" : view(Inputs.select(dependencias, {
-  label: "Dependencia",
-  value: "Todas"
-}));
+const depSel = escuelaPreseleccionada ? null : view(Inputs.select(
+  [null, ...filtros.dependencias],
+  {label: "Dependencia", format: d => d ? d.nombre : "Todas"}
+));
 ```
 
 </div>
@@ -232,8 +233,8 @@ if (!escuelaPreseleccionada) {
     const matchBusqueda = !busquedaTexto ||
       d.establecimiento.toLowerCase().includes(busquedaTexto.toLowerCase()) ||
       d.comuna?.toLowerCase().includes(busquedaTexto.toLowerCase());
-    const matchRegion = regionSeleccionada === "Todas" || d.region === regionSeleccionada;
-    const matchDependencia = dependenciaSeleccionada === "Todas" || d.dependencia === dependenciaSeleccionada;
+    const matchRegion = !regionSel || d.cod_region === regionSel.codigo;
+    const matchDependencia = !depSel || d.dependencia === depSel.nombre;
     return matchBusqueda && matchRegion && matchDependencia;
   });
 
