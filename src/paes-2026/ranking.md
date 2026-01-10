@@ -1,6 +1,6 @@
 ---
 title: PAES 2026 - Ranking
-toc: true
+toc: false
 style: styles.css
 head: |
   <link rel="canonical" href="https://public.datalized.cl/paes-2026/ranking">
