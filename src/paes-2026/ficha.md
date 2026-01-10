@@ -79,6 +79,7 @@ if (escuelaPreseleccionada) {
 
   if (cercanas.length > 0) {
     display(html`<h2 class="section-title">Comparación con otros establecimientos en ${e.comuna}</h2>`);
+    display(html`<p>Comparación del promedio Lectora + Matemática con otros establecimientos de la misma comuna. Permite contextualizar el desempeño dentro de la misma comuna.</p>`);
 
     const comparacion = [e, ...cercanas];
     display(html`
@@ -211,6 +212,7 @@ if (escuelaPreseleccionada && escuelaPreseleccionada.lat && escuelaPreselecciona
     // Renderizar todo el grid de una vez
     display(html`
       <h2 class="section-title">Colegios cercanos geográficamente</h2>
+      <p>Los 10 establecimientos más cercanos por distancia geográfica, independiente de la comuna. Útil para comparar con alternativas en el entorno inmediato.</p>
       <div class="grid grid-cols-2">
         <div class="card">
           <h3>Mapa de ubicación</h3>
