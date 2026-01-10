@@ -178,7 +178,7 @@ if (escuelaPreseleccionada) {
         establecimiento: (d, i, data) => html`<a href="?rbd=${data[i].rbd}" class="school-name" style="color: var(--datalized-teal);">${d}</a>`,
         dependencia: d => depBadge(d),
         prom_lect_mate: d => d,
-        en_top10: (d, i, data) => top10Indicator(d, data[i].cantidad)
+        en_top10: d => d
       },
       width: {
         rank_comuna: 40,
@@ -229,50 +229,46 @@ const depSel = escuelaPreseleccionada ? null : view(Inputs.select(
 
 ```js
 if (!escuelaPreseleccionada) {
-  const escuelasFiltradas = escuelas.filter(d => {
-    const matchBusqueda = !busquedaTexto ||
-      d.establecimiento.toLowerCase().includes(busquedaTexto.toLowerCase()) ||
-      d.comuna?.toLowerCase().includes(busquedaTexto.toLowerCase());
-    const matchRegion = !regionSel || d.cod_region === regionSel.codigo;
-    const matchDependencia = !depSel || d.dependencia === depSel.nombre;
-    return matchBusqueda && matchRegion && matchDependencia;
-  });
+  const hayFiltroActivo = busquedaTexto || regionSel || depSel;
 
-  display(html`<p style="color: var(--datalized-gray-light); margin-bottom: 1rem;">Mostrando <strong>${escuelasFiltradas.length.toLocaleString()}</strong> de ${escuelas.length.toLocaleString()} establecimientos</p>`);
+  if (hayFiltroActivo) {
+    const escuelasFiltradas = escuelas.filter(d => {
+      const matchBusqueda = !busquedaTexto ||
+        d.establecimiento.toLowerCase().includes(busquedaTexto.toLowerCase()) ||
+        d.comuna?.toLowerCase().includes(busquedaTexto.toLowerCase());
+      const matchRegion = !regionSel || d.cod_region === regionSel.codigo;
+      const matchDependencia = !depSel || d.dependencia === depSel.nombre;
+      return matchBusqueda && matchRegion && matchDependencia;
+    }).sort((a, b) => a.establecimiento.localeCompare(b.establecimiento));
 
-  display(Inputs.table(escuelasFiltradas, {
-    columns: ["rank_nacional", "establecimiento", "dependencia", "prom_lect_mate", "comuna", "region", "cantidad"],
-    header: {
-      rank_nacional: html`<span title="Ranking nacional por promedio Lectora + Matemática">#</span>`,
-      establecimiento: html`<span title="Haz clic para ver la ficha detallada">Establecimiento</span>`,
-      dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
-      prom_lect_mate: html`<span title="Promedio en Competencia Lectora y Matemática 1">Prom. L+M</span>`,
-      comuna: html`<span title="Comuna donde se ubica el establecimiento">Comuna</span>`,
-      region: html`<span title="Región del país">Región</span>`,
-      cantidad: html`<span title="Cantidad de estudiantes que rindieron la PAES">Est.</span>`
-    },
-    format: {
-      rank_nacional: d => rankBadge(d),
-      establecimiento: (d, i, data) => html`<a href="?rbd=${data[i].rbd}" class="school-name" style="text-decoration: none; color: var(--datalized-teal);">${d}</a>`,
-      dependencia: d => depBadge(d),
-      prom_lect_mate: d => scoreValue(d)
-    },
-    width: {
-      rank_nacional: 40,
-      establecimiento: 180,
-      dependencia: 110,
-      prom_lect_mate: 80,
-      comuna: 100,
-      region: 120,
-      cantidad: 50
-    },
-    rows: 20,
-    align: {
-      rank_nacional: "center",
-      cantidad: "right",
-      prom_lect_mate: "right"
-    },
-    select: false
-  }));
+    display(html`<p style="color: var(--datalized-gray-light); margin-bottom: 1rem;">Mostrando <strong>${escuelasFiltradas.length.toLocaleString()}</strong> establecimientos</p>`);
+
+    display(Inputs.table(escuelasFiltradas, {
+      columns: ["rbd", "establecimiento", "dependencia", "comuna", "region"],
+      header: {
+        rbd: html`<span title="Rol Base de Datos del establecimiento">RBD</span>`,
+        establecimiento: html`<span title="Haz clic para ver la ficha detallada">Establecimiento</span>`,
+        dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
+        comuna: html`<span title="Comuna donde se ubica el establecimiento">Comuna</span>`,
+        region: html`<span title="Región del país">Región</span>`
+      },
+      format: {
+        rbd: d => d,
+        establecimiento: (d, i, data) => html`<a href="?rbd=${data[i].rbd}" class="school-name" style="text-decoration: none; color: var(--datalized-teal);">${d}</a>`,
+        dependencia: d => depBadge(d)
+      },
+      width: {
+        rbd: 60,
+        establecimiento: 200,
+        dependencia: 120,
+        comuna: 120,
+        region: 140
+      },
+      rows: 20,
+      select: false
+    }));
+  } else {
+    display(html`<p style="color: var(--datalized-gray-light); margin-top: 1rem;">Usa los filtros para buscar un establecimiento.</p>`);
+  }
 }
 ```
