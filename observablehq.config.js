@@ -21,5 +21,13 @@ export default {
     base: "/",
     pager: false,
     search: true,
-    footer: "Un proyecto de Datalized"
+    footer: `<div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+      <span>Hecho con</span>
+      <span style="color: #e25555; font-size: 1.1em;">♥</span>
+      <span>por</span>
+      <a href="https://datalized.cl" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 0.3rem; text-decoration: none;">
+        <img src="/logo-datalized.png" alt="Datalized" style="height: 20px; vertical-align: middle;">
+      </a>
+      <span style="color: var(--theme-foreground-muted); margin-left: 0.5rem;">· solving problems with data</span>
+    </div>`
 };
