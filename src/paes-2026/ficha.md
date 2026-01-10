@@ -139,12 +139,128 @@ if (escuelaPreseleccionada) {
               dependencia: d => depBadge(d)
             },
             layout: "auto",
-            rows: 15,
-            select: false
+            select: false,
+            // badge increase row height
+            rows: 11*2
           })}
         </div>
       </div>
     `);
+  }
+
+}
+```
+
+```js
+import * as L from "npm:leaflet";
+```
+
+```js
+// Sección de colegios cercanos geográficamente
+if (escuelaPreseleccionada && escuelaPreseleccionada.lat && escuelaPreseleccionada.lon) {
+  const e = escuelaPreseleccionada;
+
+  // Función haversine para calcular distancia en km
+  const haversine = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  };
+
+  // Encontrar los 10 colegios más cercanos
+  const cercanos = escuelas
+    .filter(x => x.rbd !== e.rbd && x.lat && x.lon)
+    .map(x => ({...x, distancia: haversine(e.lat, e.lon, x.lat, x.lon)}))
+    .sort((a, b) => a.distancia - b.distancia)
+    .slice(0, 10);
+
+  if (cercanos.length > 0) {
+    // Crear el contenedor del mapa
+    const mapContainer = document.createElement("div");
+    mapContainer.style.cssText = "height: 350px; border-radius: 8px;";
+
+    // Incluir colegio actual en la tabla con distancia 0
+    const tablaData = [{...e, distancia: 0}, ...cercanos];
+
+    // Crear la tabla
+    const tabla = Inputs.table(tablaData, {
+      columns: ["establecimiento", "dependencia", "prom_lect_mate", "distancia"],
+      header: {
+        establecimiento: "Establecimiento",
+        dependencia: "Dep.",
+        prom_lect_mate: "Prom.",
+        distancia: "Dist."
+      },
+      format: {
+        establecimiento: (d, i, data) => {
+          const isActual = data[i].rbd === e.rbd;
+          return html`<a href="?rbd=${data[i].rbd}" style="color: var(--datalized-teal); ${isActual ? 'font-weight: bold;' : ''}">${d}${isActual ? ' (actual)' : ''}</a>`;
+        },
+        dependencia: d => depBadge(d),
+        distancia: d => d === 0 ? "-" : d.toFixed(1) + " km"
+      },
+      layout: "auto",
+      select: false,
+      rows: 11
+    });
+
+    // Renderizar todo el grid de una vez
+    display(html`
+      <h2 class="section-title">Colegios cercanos geográficamente</h2>
+      <div class="grid grid-cols-2">
+        <div class="card">
+          <h3>Mapa de ubicación</h3>
+          ${mapContainer}
+          <figcaption style="margin-top: 0.5rem; font-size: 0.8rem;">🏫 actual · 🏠 cercanos</figcaption>
+        </div>
+        <div class="card">
+          <h3>Colegios más cercanos</h3>
+          ${tabla}
+        </div>
+      </div>
+    `);
+
+    // Inicializar el mapa después de que el contenedor esté en el DOM
+    const map = L.map(mapContainer).setView([e.lat, e.lon], 14);
+
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    // Icono destacado para el colegio actual
+    const iconoActual = L.divIcon({
+      className: '',
+      html: '<div style="background: var(--datalized-teal); width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 16px;">🏫</div>',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
+
+    // Icono para colegios cercanos
+    const iconoCercano = L.divIcon({
+      className: '',
+      html: '<div style="background: #64748b; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px;">🏠</div>',
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
+
+    // Marcador del colegio actual (destacado)
+    L.marker([e.lat, e.lon], {icon: iconoActual}).addTo(map)
+      .bindPopup(`<strong>${e.establecimiento}</strong><br>Prom: ${e.prom_lect_mate}`)
+      .openPopup();
+
+    // Marcadores de colegios cercanos
+    cercanos.forEach(c => {
+      L.marker([c.lat, c.lon], {icon: iconoCercano}).addTo(map)
+        .bindPopup(`<strong>${c.establecimiento}</strong><br>Prom: ${c.prom_lect_mate}<br>${c.distancia.toFixed(1)} km`);
+    });
+
+    // Ajustar vista para mostrar todos los marcadores
+    const bounds = L.latLngBounds([[e.lat, e.lon], ...cercanos.map(x => [x.lat, x.lon])]);
+    map.fitBounds(bounds, {padding: [30, 30]});
   }
 }
 ```
