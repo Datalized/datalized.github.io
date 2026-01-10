@@ -81,6 +81,7 @@ Inputs.table(datos, {
   },
   format: {
     rank_nacional: d => rankBadge(d),
+    establecimiento: (d, i, data) => html`<a href="./ficha?rbd=${data[i].rbd}" style="text-decoration: none; color: var(--datalized-teal);">${d}</a>`,
     dependencia: d => depBadge(d)
   },
   layout: "auto",
