@@ -79,71 +79,72 @@ if (escuelaPreseleccionada) {
 
   if (cercanas.length > 0) {
     display(html`<h2 class="section-title">Comparación con otros establecimientos en ${e.comuna}</h2>`);
-    display(html`<p>Este gráfico compara el promedio Lectora + Matemática del establecimiento seleccionado (destacado en color verde) con otros establecimientos de la misma comuna.</p>`);
 
     const comparacion = [e, ...cercanas];
     display(html`
-      <figure>
-        <div class="plot-container">
-          ${resize((width) => Plot.plot({
-            width,
-            marginLeft: Math.min(250, width * 0.4),
-            marginRight: 50,
-            height: Math.max(280, comparacion.length * 28),
-            style: {fontSize: "11px"},
-            y: {label: null},
-            x: {axis: null},
-            marks: [
-              Plot.barX(comparacion, {
-                y: "establecimiento",
-                x: "prom_lect_mate",
-                fill: d => d.rbd === e.rbd ? "var(--datalized-teal)" : "#94a3b8",
-                sort: {y: "-x"},
-                tip: {
-                  format: {
-                    y: true,
-                    x: d => `${d} puntos promedio`
-                  }
-                }
-              }),
-              Plot.text(comparacion, {
-                y: "establecimiento",
-                x: "prom_lect_mate",
-                text: d => d.prom_lect_mate,
-                dx: 5,
-                textAnchor: "start",
-                fontSize: 10,
-                fill: "currentColor"
-              })
-            ]
-          }))}
+      <div class="grid grid-cols-2">
+        <div class="card">
+          <h3>Gráfico comparativo</h3>
+          <figure>
+            <div class="plot-container">
+              ${resize((width) => Plot.plot({
+                width,
+                marginLeft: Math.min(180, width * 0.45),
+                marginRight: 50,
+                height: Math.max(280, comparacion.length * 28),
+                style: {fontSize: "11px"},
+                y: {label: null},
+                x: {axis: null},
+                marks: [
+                  Plot.barX(comparacion, {
+                    y: "establecimiento",
+                    x: "prom_lect_mate",
+                    fill: d => d.rbd === e.rbd ? "var(--datalized-teal)" : "#94a3b8",
+                    sort: {y: "-x"},
+                    tip: {
+                      format: {
+                        y: true,
+                        x: d => d + " pts"
+                      }
+                    }
+                  }),
+                  Plot.text(comparacion, {
+                    y: "establecimiento",
+                    x: "prom_lect_mate",
+                    text: d => d.prom_lect_mate,
+                    dx: 5,
+                    textAnchor: "start",
+                    fontSize: 10,
+                    fill: "currentColor"
+                  })
+                ]
+              }))}
+            </div>
+            <figcaption>Barra verde = establecimiento actual</figcaption>
+          </figure>
         </div>
-        <figcaption><strong>Figura 1:</strong> Comparación de promedios Lectora + Matemática con establecimientos de la misma comuna (barra verde = establecimiento actual)</figcaption>
-      </figure>
+        <div class="card">
+          <h3>Tabla comparativa</h3>
+          ${Inputs.table(comparacion.sort((a, b) => b.prom_lect_mate - a.prom_lect_mate), {
+            columns: ["rank_comuna", "establecimiento", "dependencia", "prom_lect_mate"],
+            header: {
+              rank_comuna: "#",
+              establecimiento: "Establecimiento",
+              dependencia: "Dep.",
+              prom_lect_mate: "Prom."
+            },
+            format: {
+              rank_comuna: d => rankBadge(d),
+              establecimiento: (d, i, data) => html`<a href="?rbd=${data[i].rbd}" style="color: var(--datalized-teal);">${d}</a>`,
+              dependencia: d => depBadge(d)
+            },
+            layout: "auto",
+            rows: 15,
+            select: false
+          })}
+        </div>
+      </div>
     `);
-
-    display(html`<h3>Tabla comparativa</h3>`);
-    display(Inputs.table(comparacion.sort((a, b) => b.prom_lect_mate - a.prom_lect_mate), {
-      columns: ["rank_comuna", "establecimiento", "dependencia", "prom_lect_mate", "cantidad", "en_top10", "rank_nacional"],
-      header: {
-        rank_comuna: "# Com.",
-        establecimiento: "Establecimiento",
-        dependencia: "Dep.",
-        prom_lect_mate: "Prom.",
-        cantidad: "Est.",
-        en_top10: "Top 10%",
-        rank_nacional: "Rank Nac."
-      },
-      format: {
-        rank_comuna: d => rankBadge(d),
-        rank_nacional: d => rankBadge(d),
-        establecimiento: (d, i, data) => html`<a href="?rbd=${data[i].rbd}" class="school-name" style="color: var(--datalized-teal);">${d}</a>`,
-        dependencia: d => depBadge(d)
-      },
-      layout: "auto",
-      rows: 20,
-      select: false
-    }));
   }
 }
 ```
