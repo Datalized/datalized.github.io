@@ -73,25 +73,21 @@ statsGrid([
 Inputs.table(data.stats_pruebas, {
   columns: ["prueba", "n", "promedio", "desviacion", "p25", "mediana", "p75", "p90", "puntaje_maximo"],
   header: {
-    prueba: html`<span title="Nombre de la prueba PAES">Prueba</span>`,
-    n: html`<span title="Cantidad de estudiantes que rindieron la prueba">Rindieron</span>`,
-    promedio: html`<span title="Puntaje promedio obtenido">Promedio</span>`,
-    desviacion: html`<span title="Desviación estándar de los puntajes">Desv. Est.</span>`,
-    p25: html`<span title="Percentil 25: 25% obtuvo este puntaje o menos">P25</span>`,
-    mediana: html`<span title="Percentil 50: valor central de la distribución">Mediana</span>`,
-    p75: html`<span title="Percentil 75: 75% obtuvo este puntaje o menos">P75</span>`,
-    p90: html`<span title="Percentil 90: umbral del Top 10%">P90</span>`,
-    puntaje_maximo: html`<span title="Estudiantes que obtuvieron puntaje nacional (1000 pts)">Con 1000 pts</span>`
+    prueba: "Prueba",
+    n: "Rindieron",
+    promedio: "Prom.",
+    desviacion: "Desv.",
+    p25: "P25",
+    mediana: "Mediana",
+    p75: "P75",
+    p90: "P90",
+    puntaje_maximo: "1000 pts"
   },
   format: {
     n: d => d.toLocaleString("es-CL"),
     puntaje_maximo: d => d.toLocaleString("es-CL")
   },
-  width: {
-    prueba: 160,
-    n: 90,
-    puntaje_maximo: 90
-  },
+  layout: "auto",
   select: false
 })
 ```
@@ -139,22 +135,17 @@ Inputs.table(data.stats_pruebas, {
     ${Inputs.table(data.puntajes_maximos, {
       columns: ["prueba", "total", "con_1000", "pct"],
       header: {
-        prueba: html`<span title="Nombre de la prueba PAES">Prueba</span>`,
-        total: html`<span title="Cantidad de estudiantes que rindieron la prueba">Rindieron</span>`,
-        con_1000: html`<span title="Estudiantes con puntaje nacional (1000 pts)">Con 1000</span>`,
-        pct: html`<span title="Porcentaje que obtuvo puntaje nacional">% del total</span>`
+        prueba: "Prueba",
+        total: "Rindieron",
+        con_1000: "Con 1000",
+        pct: "%"
       },
       format: {
         total: d => d.toLocaleString("es-CL"),
         con_1000: d => d.toLocaleString("es-CL"),
         pct: d => d + "%"
       },
-      width: {
-        prueba: 120,
-        total: 80,
-        con_1000: 70,
-        pct: 70
-      },
+      layout: "auto",
       select: false
     })}
   </div>
@@ -264,19 +255,16 @@ const datosFiltrados = data.distribucion_dependencia.filter(d => d.prueba === pr
     ${Inputs.table(datosFiltrados, {
       columns: ["dependencia", "n", "promedio", "mediana", "desviacion"],
       header: {
-        dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
-        n: html`<span title="Cantidad de estudiantes que rindieron">Rindieron</span>`,
-        promedio: html`<span title="Puntaje promedio obtenido">Promedio</span>`,
-        mediana: html`<span title="Percentil 50: valor central">Mediana</span>`,
-        desviacion: html`<span title="Desviación estándar">Desv. Est.</span>`
+        dependencia: "Dependencia",
+        n: "Rindieron",
+        promedio: "Prom.",
+        mediana: "Mediana",
+        desviacion: "Desv."
       },
       format: {
         n: d => d.toLocaleString("es-CL")
       },
-      width: {
-        dependencia: 140,
-        n: 80
-      },
+      layout: "auto",
       select: false
     })}
   </div>
@@ -336,18 +324,15 @@ const ramaData = data.distribucion_rama.map(d => ({
     ${Inputs.table(data.distribucion_rama, {
       columns: ["rama", "n", "prom_lectora", "prom_mate1"],
       header: {
-        rama: html`<span title="Rama educacional del establecimiento">Rama</span>`,
-        n: html`<span title="Cantidad de estudiantes que rindieron">Rindieron</span>`,
-        prom_lectora: html`<span title="Promedio en Competencia Lectora">Prom. Lectora</span>`,
-        prom_mate1: html`<span title="Promedio en Matemática 1">Prom. Mate 1</span>`
+        rama: "Rama",
+        n: "Rindieron",
+        prom_lectora: "Prom. Lect.",
+        prom_mate1: "Prom. M1"
       },
       format: {
         n: d => d.toLocaleString("es-CL")
       },
-      width: {
-        rama: 140,
-        n: 80
-      },
+      layout: "auto",
       select: false
     })}
   </div>

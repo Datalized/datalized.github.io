@@ -14,7 +14,7 @@ head: |
 ```js
 const escuelas = FileAttachment("data/escuelas-ranking.json").json();
 const filtros = FileAttachment("data/filtros.json").json();
-import { rankBadge, depBadge, scoreValue, top10Indicator, rankingAlign } from "./components/tableFormatters.js";
+import { rankBadge, depBadge, scoreValue, top10Indicator, rankingAlign, tableHeaders } from "./components/tableFormatters.js";
 import { statsGrid } from "./components/statCard.js";
 ```
 
@@ -126,34 +126,22 @@ if (escuelaPreseleccionada) {
     display(Inputs.table(comparacion.sort((a, b) => b.prom_lect_mate - a.prom_lect_mate), {
       columns: ["rank_comuna", "establecimiento", "dependencia", "prom_lect_mate", "cantidad", "en_top10", "rank_nacional"],
       header: {
-        rank_comuna: html`<span title="Ranking dentro de la comuna">#</span>`,
-        establecimiento: html`<span title="Haz clic para ver la ficha detallada">Establecimiento</span>`,
-        dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
-        prom_lect_mate: html`<span title="Promedio en Competencia Lectora y Matemática 1">Prom. L+M</span>`,
-        cantidad: html`<span title="Cantidad de estudiantes que rindieron la PAES">Est.</span>`,
-        en_top10: html`<span title="Estudiantes en el Top 10% nacional">Top 10%</span>`,
-        rank_nacional: html`<span title="Ranking nacional por promedio"># Nac.</span>`
+        rank_comuna: "# Com.",
+        establecimiento: "Establecimiento",
+        dependencia: "Dep.",
+        prom_lect_mate: "Prom.",
+        cantidad: "Est.",
+        en_top10: "Top 10%",
+        rank_nacional: "Rank Nac."
       },
       format: {
         rank_comuna: d => rankBadge(d),
         rank_nacional: d => rankBadge(d),
         establecimiento: (d, i, data) => html`<a href="?rbd=${data[i].rbd}" class="school-name" style="color: var(--datalized-teal);">${d}</a>`,
-        dependencia: d => depBadge(d),
-        prom_lect_mate: d => d,
-        en_top10: d => d
+        dependencia: d => depBadge(d)
       },
-      width: {
-        rank_comuna: 40,
-        establecimiento: 160,
-        dependencia: 100,
-        prom_lect_mate: 70,
-        cantidad: 50,
-        en_top10: 60,
-        rank_nacional: 50
-      },
-      rows: 100,
-      height: 'auto',
-      align: rankingAlign,
+      layout: "auto",
+      rows: 20,
       select: false
     }));
   }
@@ -208,24 +196,17 @@ if (!escuelaPreseleccionada) {
     display(Inputs.table(escuelasFiltradas, {
       columns: ["rbd", "establecimiento", "dependencia", "comuna", "region"],
       header: {
-        rbd: html`<span title="Rol Base de Datos del establecimiento">RBD</span>`,
-        establecimiento: html`<span title="Haz clic para ver la ficha detallada">Establecimiento</span>`,
-        dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
-        comuna: html`<span title="Comuna donde se ubica el establecimiento">Comuna</span>`,
-        region: html`<span title="Región del país">Región</span>`
+        rbd: "RBD",
+        establecimiento: "Establecimiento",
+        dependencia: "Dep.",
+        comuna: "Comuna",
+        region: "Región"
       },
       format: {
-        rbd: d => d,
         establecimiento: (d, i, data) => html`<a href="?rbd=${data[i].rbd}" class="school-name" style="text-decoration: none; color: var(--datalized-teal);">${d}</a>`,
         dependencia: d => depBadge(d)
       },
-      width: {
-        rbd: 60,
-        establecimiento: 200,
-        dependencia: 120,
-        comuna: 120,
-        region: 140
-      },
+      layout: "auto",
       rows: 20,
       select: false
     }));

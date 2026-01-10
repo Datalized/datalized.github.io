@@ -69,30 +69,21 @@ datos = datos.slice(0, topN);
 
 ```js
 Inputs.table(datos, {
-  columns: ["rank_nacional", "establecimiento", "dependencia", "prom_lect_mate", "comuna", "cantidad", "en_top10", "rank_comuna"],
-  header: tableHeaders,
+  columns: ["rank_nacional", "establecimiento", "dependencia", "prom_lect_mate", "comuna", "cantidad", "en_top10"],
+  header: {
+    rank_nacional: "#",
+    establecimiento: "Establecimiento",
+    dependencia: "Dep.",
+    prom_lect_mate: "Prom.",
+    comuna: "Comuna",
+    cantidad: "Est.",
+    en_top10: "Top 10%"
+  },
   format: {
     rank_nacional: d => rankBadge(d),
-    rank_comuna: d => rankBadge(d),
-    establecimiento: d => html`<span class="school-name">${d}</span>`,
-    dependencia: d => depBadge(d),
-    prom_lect_mate: d => d,
-    en_top10: (d, i, data) => data[i].cantidad,
-    comuna: d => d
+    dependencia: d => depBadge(d)
   },
-  align: rankingAlign,
-  width: {
-    rank_nacional: 40,
-    establecimiento: 180,
-    dependencia: 110,
-    prom_lect_mate: 80,
-    comuna: 100,
-    cantidad: 60,
-    en_top10: 60,
-    rank_comuna: 50
-  },
-  rows: 30,
-  select: false,
-  sort: false
+  layout: "auto",
+  rows: 20
 })
 ```

@@ -20,7 +20,7 @@ Una mirada rápida a quiénes concentran el **Top 10%** de puntajes en la PAES y
 ```js
 const data = FileAttachment("data/brechas-top10.json").json();
 const escuelasRanking = FileAttachment("data/escuelas-ranking.json").json();
-import { rankBadge, depBadge, rankingAlign } from "./components/tableFormatters.js";
+import { rankBadge, depBadge, rankingAlign, tableHeaders } from "./components/tableFormatters.js";
 import { statsGrid } from "./components/statCard.js";
 import { coloresDependencia } from "./components/constants.js";
 ```
@@ -115,31 +115,21 @@ Ranking de establecimientos por **cantidad de estudiantes en Top 10%**. El “ra
 Inputs.table(escuelasTop10.slice(0, 100), {
   columns: ["rank_top10", "establecimiento", "dependencia", "estudiantes_top10", "comuna", "total_estudiantes", "rank_nacional"],
   header: {
-    rank_top10: html`<span title="Ranking por cantidad de estudiantes en Top 10%">#</span>`,
-    establecimiento: html`<span title="Nombre del establecimiento educacional">Establecimiento</span>`,
-    dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
-    estudiantes_top10: html`<span title="Cantidad de estudiantes en el Top 10% nacional">Top 10%</span>`,
-    comuna: html`<span title="Comuna donde se ubica el establecimiento">Comuna</span>`,
-    total_estudiantes: html`<span title="Total de estudiantes que rindieron la PAES">Total</span>`,
-    rank_nacional: html`<span title="Ranking nacional por promedio"># Nac.</span>`
+    rank_top10: "#",
+    establecimiento: "Establecimiento",
+    dependencia: "Dep.",
+    estudiantes_top10: "Top 10%",
+    comuna: "Comuna",
+    total_estudiantes: "Total",
+    rank_nacional: "Rank Nac."
   },
   format: {
     rank_top10: d => rankBadge(d),
     rank_nacional: d => rankBadge(d),
-    establecimiento: d => html`<span class="school-name">${d}</span>`,
     dependencia: d => depBadge(d)
   },
-  align: rankingAlign,
-  width: {
-    rank_top10: 40,
-    establecimiento: 180,
-    dependencia: 110,
-    estudiantes_top10: 70,
-    comuna: 100,
-    total_estudiantes: 60,
-    rank_nacional: 50
-  },
-  height: 'auto',
+  layout: "auto",
+  rows: 20,
   select: false
 })
 ```
