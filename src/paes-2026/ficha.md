@@ -19,13 +19,7 @@ import { statsGrid } from "./components/statCard.js";
 ```
 
 ```js
-const colores = {
-  'Particular Pagado': '#E63946',
-  'Particular Subvencionado': '#457B9D',
-  'Municipal': '#2A9D8F',
-  'Serv. Local Educación': '#E9C46A',
-  'Corp. Administración Delegada': '#9B5DE5'
-};
+import { coloresDependencia } from "./components/constants.js";
 
 // Leer parámetro RBD de la URL (después de que escuelas esté cargado)
 const urlParams = new URLSearchParams(window.location.search);
@@ -46,7 +40,7 @@ if (escuelaPreseleccionada) {
   `);
 
   display(html`
-    <div class="school-header" style="border-left: 4px solid ${colores[e.dependencia]}">
+    <div class="school-header" style="border-left: 4px solid ${coloresDependencia[e.dependencia]}">
       <h1 style="margin-bottom: 0.5rem; font-size: 1.75rem;">${e.establecimiento}</h1>
       <div class="school-meta">
         <span><strong>RBD:</strong> ${e.rbd}</span>

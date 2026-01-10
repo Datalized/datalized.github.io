@@ -14,7 +14,7 @@ head: |
 # Ranking de Establecimientos
 
 ```js
-import { rankBadge, depBadge, scoreValue, top10Indicator, rankingAlign } from "./components/tableFormatters.js";
+import { rankBadge, depBadge, scoreValue, top10Indicator, rankingAlign, tableHeaders } from "./components/tableFormatters.js";
 
 const escuelas = FileAttachment("data/escuelas-ranking.json").json();
 const filtros = FileAttachment("data/filtros.json").json();
@@ -70,16 +70,7 @@ datos = datos.slice(0, topN);
 ```js
 Inputs.table(datos, {
   columns: ["rank_nacional", "establecimiento", "dependencia", "prom_lect_mate", "comuna", "cantidad", "en_top10", "rank_comuna"],
-  header: {
-    rank_nacional: html`<span title="Ranking nacional por promedio Lectora + Matemática">#</span>`,
-    establecimiento: html`<span title="Nombre del establecimiento educacional">Establecimiento</span>`,
-    dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
-    prom_lect_mate: html`<span title="Promedio en Competencia Lectora y Matemática 1">Prom. L+M</span>`,
-    comuna: html`<span title="Comuna donde se ubica el establecimiento">Comuna</span>`,
-    cantidad: html`<span title="Cantidad de estudiantes que rindieron la PAES">Est.</span>`,
-    en_top10: html`<span title="Estudiantes en el Top 10% nacional">Top 10%</span>`,
-    rank_comuna: html`<span title="Ranking dentro de la comuna"># Com.</span>`
-  },
+  header: tableHeaders,
   format: {
     rank_nacional: d => rankBadge(d),
     rank_comuna: d => rankBadge(d),

@@ -18,14 +18,7 @@ Una mirada general a los datos de la **PAES 2026** (Prueba de Acceso a la Educac
 ```js
 const data = FileAttachment("data/overview.json").json();
 import { statsGrid } from "./components/statCard.js";
-
-const colores = {
-  'Particular Pagado': '#E63946',
-  'Particular Subvencionado': '#457B9D',
-  'Municipal': '#2A9D8F',
-  'Serv. Local Educación': '#E9C46A',
-  'Corp. Administración Delegada': '#9B5DE5'
-};
+import { coloresDependencia, coloresPrueba } from "./components/constants.js";
 ```
 
 ## Indicadores Generales
@@ -169,16 +162,6 @@ Inputs.table(data.stats_pruebas, {
 
 ## Distribución de Puntajes
 
-```js
-const coloresPruebas = {
-  'Competencia Lectora': '#457B9D',
-  'Matemática 1': '#2A9D8F',
-  'Matemática 2': '#E9C46A',
-  'Historia y Cs. Sociales': '#E63946',
-  'Ciencias': '#9B5DE5'
-};
-```
-
 <div class="grid grid-cols-2">
   ${data.histogramas.map((h, i) => html`
     <div class="card">
@@ -197,7 +180,7 @@ const coloresPruebas = {
                 x1: "rango",
                 x2: d => d.rango + 50,
                 y: "frecuencia",
-                fill: coloresPruebas[h.prueba] || "#94a3b8",
+                fill: coloresPrueba[h.prueba] || "#94a3b8",
                 fillOpacity: 0.7,
                 tip: {
                   format: {
@@ -252,7 +235,7 @@ const datosFiltrados = data.distribucion_dependencia.filter(d => d.prueba === pr
             Plot.barX(datosFiltrados, {
               y: "dependencia",
               x: "promedio",
-              fill: d => colores[d.dependencia] || "#94a3b8",
+              fill: d => coloresDependencia[d.dependencia] || "#94a3b8",
               sort: {y: "-x"},
               tip: {
                 format: {

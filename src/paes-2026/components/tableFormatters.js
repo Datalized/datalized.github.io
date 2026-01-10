@@ -65,3 +65,31 @@ export const rankingAlign = {
     estudiantes_top10: "right",
     total_estudiantes: "right"
 };
+
+// Headers de tabla con tooltips explicativos
+export const tableHeaders = {
+    rbd: html`<span title="Rol Base de Datos del establecimiento">RBD</span>`,
+    rank_nacional: html`<span title="Ranking nacional por promedio Lectora + Matemática">#</span>`,
+    rank_comuna: html`<span title="Ranking dentro de la comuna"># Com.</span>`,
+    rank_top10: html`<span title="Ranking por cantidad de estudiantes en Top 10%">#</span>`,
+    establecimiento: html`<span title="Nombre del establecimiento educacional">Establecimiento</span>`,
+    dependencia: html`<span title="Tipo de administración del establecimiento">Dependencia</span>`,
+    prom_lect_mate: html`<span title="Promedio en Competencia Lectora y Matemática 1">Prom. L+M</span>`,
+    prom_lectora: html`<span title="Promedio en Competencia Lectora">Prom. Lectora</span>`,
+    prom_mate1: html`<span title="Promedio en Matemática 1">Prom. Mate 1</span>`,
+    comuna: html`<span title="Comuna donde se ubica el establecimiento">Comuna</span>`,
+    region: html`<span title="Región del país">Región</span>`,
+    cantidad: html`<span title="Cantidad de estudiantes que rindieron la PAES">Est.</span>`,
+    en_top10: html`<span title="Estudiantes en el Top 10% nacional">Top 10%</span>`,
+    estudiantes_top10: html`<span title="Cantidad de estudiantes en el Top 10% nacional">Top 10%</span>`,
+    total_estudiantes: html`<span title="Total de estudiantes que rindieron la PAES">Total</span>`,
+    // Stats por prueba
+    n: html`<span title="Cantidad de estudiantes que rindieron la prueba">Rindieron</span>`,
+    promedio: html`<span title="Puntaje promedio obtenido">Promedio</span>`,
+    desviacion: html`<span title="Desviación estándar de los puntajes">Desv. Est.</span>`,
+    mediana: html`<span title="Percentil 50: valor central de la distribución">Mediana</span>`,
+    p25: html`<span title="Percentil 25: 25% obtuvo este puntaje o menos">P25</span>`,
+    p75: html`<span title="Percentil 75: 75% obtuvo este puntaje o menos">P75</span>`,
+    p90: html`<span title="Percentil 90: umbral del Top 10%">P90</span>`,
+    puntaje_maximo: html`<span title="Estudiantes que obtuvieron puntaje nacional (1000 pts)">Con 1000 pts</span>`
+};

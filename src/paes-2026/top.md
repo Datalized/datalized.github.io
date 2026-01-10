@@ -22,14 +22,7 @@ const data = FileAttachment("data/brechas-top10.json").json();
 const escuelasRanking = FileAttachment("data/escuelas-ranking.json").json();
 import { rankBadge, depBadge, rankingAlign } from "./components/tableFormatters.js";
 import { statsGrid } from "./components/statCard.js";
-
-const colores = {
-  'Particular Pagado': '#E63946',
-  'Particular Subvencionado': '#457B9D',
-  'Municipal': '#2A9D8F',
-  'Serv. Local Educación': '#E9C46A',
-  'Corp. Administración Delegada': '#9B5DE5'
-};
+import { coloresDependencia } from "./components/constants.js";
 ```
 
 ```js
@@ -87,7 +80,7 @@ const pctNoPagado = data.origen_top10
         Plot.barX(data.origen_top10, {
           y: "dependencia",
           x: "estudiantes",
-          fill: d => colores[d.dependencia],
+          fill: d => coloresDependencia[d.dependencia],
           sort: {y: "-x"},
           tip: {
             format: {
