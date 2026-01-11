@@ -9,6 +9,8 @@ head: |
   <meta property="og:description" content="Análisis del Top 10% de puntajes PAES 2026 por tipo de establecimiento.">
   <meta property="og:url" content="https://public.datalized.cl/paes-2026/top">
   <meta property="og:type" content="website">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4W566JJXE"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-G4W566JJXE');</script>
 ---
 
 # Top 10

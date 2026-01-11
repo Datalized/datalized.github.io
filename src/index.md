@@ -9,6 +9,8 @@ head: |
   <meta property="og:description" content="Datos públicos de Chile, visualizados y analizados.">
   <meta property="og:url" content="https://public.datalized.cl/">
   <meta property="og:type" content="website">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4W566JJXE"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-G4W566JJXE');</script>
 ---
 
 <div class="hero">

@@ -9,6 +9,8 @@ head: |
   <meta property="og:description" content="Metodología y fuentes de datos del análisis PAES 2026.">
   <meta property="og:url" content="https://public.datalized.cl/paes-2026/metodologia">
   <meta property="og:type" content="website">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-G4W566JJXE"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-G4W566JJXE');</script>
 ---
 
 # Metodología y Datos
