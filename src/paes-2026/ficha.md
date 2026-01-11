@@ -14,8 +14,10 @@ head: |
 ```js
 const escuelas = FileAttachment("data/escuelas-ranking.json").json();
 const filtros = FileAttachment("data/filtros.json").json();
+const distribuciones = FileAttachment("data/estudiantes-distribucion.json").json();
 import { rankBadge, depBadge, scoreValue, top10Indicator, rankingAlign, tableHeaders } from "./components/tableFormatters.js";
 import { statsGrid } from "./components/statCard.js";
+import { distribucionHistogramas, calcularEstadisticasDistribucion } from "./components/scoreDistribution.js";
 ```
 
 ```js
@@ -72,6 +74,26 @@ if (escuelaPreseleccionada) {
     { title: "Percentil 75", value: e.p75 },
     { title: "En Top 10%", value: e.en_top10, subtitle: `${e.cantidad > 0 ? Math.round(e.en_top10 / e.cantidad * 100) : 0}%` }
   ]));
+
+  // Sección de histogramas de distribución detallada
+  const dist = distribuciones[String(e.rbd)];
+  if (dist && dist.lm && dist.lm.length > 0) {
+    display(html`<h2 class="section-title">Distribución Detallada por Puntaje</h2>`);
+    display(html`<p>Histogramas que muestran cómo se distribuyen los puntajes de los estudiantes. Cada barra representa un rango de 20 puntos. Las líneas de referencia indican: verde = mediana del establecimiento, gris = mediana nacional (524), rojo = umbral top 10% (658).</p>`);
+
+    display(distribucionHistogramas(dist, e, { resize, p90: 658, nationalMedian: 524 }));
+
+    // Estadísticas adicionales calculadas desde la distribución
+    const statsCalc = calcularEstadisticasDistribucion(dist.lm, 658);
+    if (statsCalc) {
+      display(statsGrid([
+        { title: "Estudiantes Analizados", value: statsCalc.total },
+        { title: "En Top 10% Nacional", value: statsCalc.enTop10, subtitle: `${statsCalc.pctTop10}%`, highlight: statsCalc.enTop10 > 0 },
+        { title: "Bajo 400 pts", value: statsCalc.bajo400, subtitle: `${statsCalc.pctBajo400}%` },
+        { title: "Dispersión (IQR)", value: `${e.p75 - e.p25} pts`, subtitle: `P25-P75` }
+      ]));
+    }
+  }
 
   const cercanas = escuelas
     .filter(x => x.comuna === e.comuna && x.rbd !== e.rbd)
